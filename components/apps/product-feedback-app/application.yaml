@@ -2,7 +2,6 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: product-feedback-app
-  namespace: product-feedback
 spec:
   project: default
   source:
