@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/alex-bartleynees/product-feedback-app.git
+    repoURL: https://github.com/alex-bartleynees/product-feedback-app-v2.git
     path: deployment/helm-charts/product-feedback-app
     targetRevision: HEAD
     helm:
