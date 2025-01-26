@@ -6,8 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: registry-1.docker.io/creativefree/my-ingress-chart
+    repoURL: registry-1.docker.io/creativefree
     targetRevision: 0.4.0
+    chart: my-ingress-chart
     path: ./
     helm:
       valueFiles:
