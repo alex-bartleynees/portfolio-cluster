@@ -25,7 +25,7 @@ ingress:
   hosts:
     - domain: alexbartleynees.com
 
-  namespace: default
+  namespace: product-feedback
 
   services:
     - name: product-feedback-api
