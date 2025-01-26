@@ -11,8 +11,8 @@ spec:
     chart: my-ingress-chart
     path: ./
     helm:
-      valueFiles:
-        - product-feedback-app-ingress-values.yaml
+      fileRefs:
+        - path: product-feedback-app-ingress-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: product-feedback
