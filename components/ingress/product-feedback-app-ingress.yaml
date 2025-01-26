@@ -11,8 +11,11 @@ spec:
     chart: my-ingress-chart
     path: ./
     helm:
-      fileRefs:
-        - path: product-feedback-app-ingress-values.yaml
+      valueFiles:
+        - $values/components/ingress/product-feedback-app-ingress-values.yaml
+    repoURL: 'https://github.com/alex-bartleynees/portfolio-cluster.git'
+    targetRevision: HEAD
+    ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: product-feedback
