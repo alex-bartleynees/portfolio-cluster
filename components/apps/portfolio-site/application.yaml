@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: product-feedback-api
+  name: portfolio-site
   namespace: argocd
 spec:
   project: default
