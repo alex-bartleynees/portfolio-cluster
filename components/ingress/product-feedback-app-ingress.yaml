@@ -12,7 +12,7 @@ spec:
     path: ./
     helm:
       valueFiles:
-        - product-feedback-app-ingress.yaml
+        - product-feedback-app-ingress-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: product-feedback
