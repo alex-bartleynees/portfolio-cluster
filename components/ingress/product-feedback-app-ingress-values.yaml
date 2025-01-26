@@ -34,9 +34,6 @@ ingress:
       pathType: Prefix
       serviceName: product-feedback-app-svc
       servicePort: 4000
-      annotations:
-        nginx.ingress.kubernetes.io/configuration-snippet: |
-          add_header Cache-Control "public, max-age=3600";
 
 tls:
   enabled: true
