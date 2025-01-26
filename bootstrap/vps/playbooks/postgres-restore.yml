@@ -1,0 +1,115 @@
+---
+- name: Restore PostgreSQL from S3 Backup
+  hosts: k8s_master
+  become: true
+  vars_files:
+    - ./group_vars/all/postgres-backup-vault.yml
+  vars:
+    s3_bucket: "{{ vault_s3_bucket }}"
+    s3_backup_path: "path/to/your/backup.sql"
+    local_backup_path: "/tmp/pg_backup.sql"
+    postgres_version: "17"
+    aws_credentials:
+      aws_access_key: "{{ vault_s3_access_key }}"
+      aws_secret_key: "{{ vault_s3_secret_key }}"
+      aws_region: "{{ vault_s3_endpoint }}"
+
+  tasks:
+    - name: Install required packages
+      dnf:
+        name:
+          - python3-boto3
+          - awscli
+        state: present
+
+    - name: Create AWS credentials file
+      copy:
+        content: |
+          [default]
+          aws_access_key_id = {{ aws_credentials.aws_access_key }}
+          aws_secret_access_key = {{ aws_credentials.aws_secret_key }}
+          region = {{ aws_credentials.aws_region }}
+        dest: /root/.aws/credentials
+        mode: "0600"
+        owner: root
+        group: root
+      no_log: true
+
+    - name: Download backup from S3
+      amazon.aws.aws_s3:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ s3_backup_path }}"
+        dest: "{{ local_backup_path }}"
+        mode: get
+      register: s3_download
+
+    - name: Stop PostgreSQL service
+      systemd:
+        name: postgresql-{{ postgres_version }}
+        state: stopped
+
+    - name: Remove existing PostgreSQL data
+      command: rm -rf /var/lib/pgsql/{{ postgres_version }}/data/*
+      args:
+        warn: false
+      when: s3_download is succeeded
+
+    - name: Initialize PostgreSQL database
+      command: /usr/pgsql-{{ postgres_version }}/bin/postgresql-{{ postgres_version }}-setup initdb
+      become_user: postgres
+      args:
+        creates: /var/lib/pgsql/{{ postgres_version }}/data/PG_VERSION
+
+    - name: Start PostgreSQL temporarily
+      systemd:
+        name: postgresql-{{ postgres_version }}
+        state: started
+
+    - name: Wait for PostgreSQL to be ready
+      wait_for:
+        port: 5432
+        timeout: 30
+
+    - name: Restore from backup
+      shell: psql -f {{ local_backup_path }}
+      become_user: postgres
+      register: restore_output
+      ignore_errors: true
+
+    - name: Display restore output
+      debug:
+        var: restore_output
+
+    - name: Restart PostgreSQL
+      systemd:
+        name: postgresql-{{ postgres_version }}
+        state: restarted
+
+    - name: Remove local backup file
+      file:
+        path: "{{ local_backup_path }}"
+        state: absent
+
+    - name: Verify PostgreSQL is running
+      command: pg_isready
+      become_user: postgres
+      register: pg_status
+      until: pg_status.rc == 0
+      retries: 10
+      delay: 3
+
+    - name: Show PostgreSQL status
+      debug:
+        var: pg_status.stdout
+
+    - name: Clean up AWS credentials
+      file:
+        path: /root/.aws/credentials
+        state: absent
+      no_log: true
+
+  handlers:
+    - name: restart postgresql
+      systemd:
+        name: postgresql-{{ postgres_version }}
+        state: restarted

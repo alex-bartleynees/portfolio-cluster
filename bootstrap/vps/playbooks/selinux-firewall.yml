@@ -1,0 +1,81 @@
+---
+- name: Configure SELinux and Firewall for Single Node Kubernetes
+  hosts: k8s_master
+  become: true
+  vars:
+    k8s_ports_tcp:
+      - 6443 # Kubernetes API server
+      - 2379 # etcd server client API
+      - 2380 # etcd server client API
+      - 10250 # Kubelet API
+      - 10251 # kube-scheduler
+      - 10252 # kube-controller-manager
+      - 10257 # kube-controller-manager webhook
+      - 10259 # kube-scheduler webhook
+      - 179 # Calico BGP
+      - 30000-32767 # NodePort Services range
+      - 80 # HTTP
+      - 443 # HTTPS
+      - 30080 # NGINX Ingress HTTP NodePort
+      - 30443 # NGINX Ingress HTTPS NodePort
+    configure_firewall: true # Set to true if you want to use firewalld
+
+  tasks:
+    - name: Set SELinux to permissive
+      selinux:
+        policy: targeted
+        state: permissive
+      register: selinux_state
+
+    - name: Update SELinux config file
+      replace:
+        path: /etc/selinux/config
+        regexp: "^SELINUX=enforcing"
+        replace: "SELINUX=permissive"
+        backup: yes
+
+    - name: Ensure firewalld is stopped and disabled
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: false
+      when: not configure_firewall
+
+    - name: Start and enable firewalld
+      systemd:
+        name: firewalld
+        state: started
+        enabled: true
+      when: configure_firewall
+
+    - name: Configure TCP ports for Kubernetes
+      firewalld:
+        port: "{{ item }}/tcp"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      with_items: "{{ k8s_ports_tcp }}"
+      when: configure_firewall
+
+    - name: Configure UDP port for Flannel VXLAN
+      firewalld:
+        port: "4789/udp"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      when: configure_firewall
+
+    - name: Reload firewall
+      command: firewall-cmd --reload
+      changed_when: true
+      when: configure_firewall
+
+    - name: Show current firewall configuration
+      command: firewall-cmd --list-all
+      register: firewall_rules
+      changed_when: false
+      when: configure_firewall
+
+    - name: Display firewall rules
+      debug:
+        var: firewall_rules.stdout_lines

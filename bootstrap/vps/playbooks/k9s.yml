@@ -1,0 +1,54 @@
+- name: Install k9s Kubernetes CLI Tool
+  hosts: k8s_master
+  become: true
+  vars:
+    k9s_version: "latest"
+    k9s_arch: "Linux_amd64"
+    k9s_temp_dir: "/tmp/k9s"
+    install_path: "/usr/local/bin/k9s"
+
+  tasks:
+    - name: Install wget
+      dnf:
+        name: wget
+        state: present
+
+    - name: Create temporary directory for k9s
+      file:
+        path: "{{ k9s_temp_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download k9s
+      get_url:
+        url: "https://github.com/derailed/k9s/releases/{{ k9s_version }}/download/k9s_{{ k9s_arch }}.tar.gz"
+        dest: "{{ k9s_temp_dir }}/k9s.tar.gz"
+        mode: "0644"
+
+    - name: Extract k9s archive
+      unarchive:
+        src: "{{ k9s_temp_dir }}/k9s.tar.gz"
+        dest: "{{ k9s_temp_dir }}"
+        remote_src: yes
+
+    - name: Move k9s binary to PATH
+      copy:
+        src: "{{ k9s_temp_dir }}/k9s"
+        dest: "{{ install_path }}"
+        mode: "0755"
+        remote_src: yes
+
+    - name: Clean up installation files
+      file:
+        path: "{{ k9s_temp_dir }}"
+        state: absent
+
+    - name: Verify k9s installation
+      command: k9s version
+      register: k9s_version_check
+      changed_when: false
+      become: false
+
+    - name: Display k9s version
+      debug:
+        var: k9s_version_check.stdout_lines

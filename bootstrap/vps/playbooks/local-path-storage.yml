@@ -1,0 +1,76 @@
+---
+- name: Setup Local Path Storage Provisioner
+  hosts: k8s_master
+  become: false # Since we're using kubectl, we don't need root
+  vars:
+    kube_config_dir: "{{ ansible_env.HOME }}/.kube"
+    local_path_provisioner_url: "https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.30/deploy/local-path-storage.yaml"
+
+  tasks:
+    - name: Create temporary directory for manifests
+      file:
+        path: /tmp/k8s-storage
+        state: directory
+        mode: "0755"
+
+    - name: Download Local Path Provisioner manifest
+      get_url:
+        url: "{{ local_path_provisioner_url }}"
+        dest: /tmp/k8s-storage/local-path-storage.yaml
+        mode: "0644"
+
+    - name: Create StorageClass manifest
+      copy:
+        dest: /tmp/k8s-storage/storageclass.yaml
+        content: |
+          apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+            name: standard
+            annotations:
+              storageclass.kubernetes.io/is-default-class: "true"
+          provisioner: rancher.io/local-path
+          volumeBindingMode: WaitForFirstConsumer
+          reclaimPolicy: Delete
+
+    - name: Apply Local Path Provisioner
+      command: kubectl apply -f /tmp/k8s-storage/local-path-storage.yaml
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: provisioner_result
+      changed_when: provisioner_result.rc == 0
+
+    - name: Apply StorageClass
+      command: kubectl apply -f /tmp/k8s-storage/storageclass.yaml
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: storageclass_result
+      changed_when: storageclass_result.rc == 0
+
+    - name: Wait for local-path-provisioner deployment
+      command: >
+        kubectl rollout status deployment/local-path-provisioner 
+        -n local-path-storage 
+        --timeout=300s
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      changed_when: false
+
+    - name: Verify StorageClass is set as default
+      command: kubectl get storageclass standard -o jsonpath='{.metadata.annotations.storageclass\.kubernetes\.io/is-default-class}'
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: default_check
+      changed_when: false
+      failed_when: default_check.stdout != 'true'
+
+    - name: Clean up temporary files
+      file:
+        path: /tmp/k8s-storage
+        state: absent
+
+    - name: Display storage setup status
+      debug:
+        msg:
+          - "Local Path Provisioner installation status: {{ provisioner_result.rc == 0 }}"
+          - "StorageClass creation status: {{ storageclass_result.rc == 0 }}"

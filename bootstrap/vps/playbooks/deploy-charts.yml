@@ -1,0 +1,55 @@
+- name: Deploy Helm Charts
+  hosts: k8s_master
+  become: false
+  vars:
+    kube_config_dir: "/home/{{ ansible_user }}/.kube"
+    remote_values_dir: "/tmp/helm-values"
+
+  tasks:
+    - name: Create remote values directory
+      file:
+        path: "{{ remote_values_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy values files to remote
+      copy:
+        src: "{{playbook_dir}}/files/{{ item.values_files[0] }}"
+        dest: "{{ remote_values_dir }}/{{ item.values_files[0] }}"
+        mode: "0644"
+      loop: "{{ helm_charts }}"
+      when: item.values_files is defined
+
+    - name: Install charts from Docker Hub
+      loop: "{{ helm_charts }}"
+      command: >
+        helm upgrade --install {{ item.release_name }}
+        oci://registry-1.docker.io/{{ docker_username }}/{{ item.name }}
+        --version {{ item.version }}
+        --namespace {{ item.namespace }}
+        --create-namespace
+        --set-string global.namespace={{ item.namespace }}
+        --reset-values
+        {% if item.values_files is defined %}
+        {% for values_file in item.values_files %}
+        -f {{remote_values_dir}}/{{ values_file }}
+        {% endfor %}
+        {% endif %}
+        {% if item.set_values is defined %}
+        {% for value in item.set_values %}
+        --set {{ value }}
+        {% endfor %}
+        {% endif %}
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+
+    - name: Show all deployed releases
+      command: helm ls -A
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: helm_ls
+      changed_when: false
+
+    - name: Display releases
+      debug:
+        var: helm_ls.stdout_lines

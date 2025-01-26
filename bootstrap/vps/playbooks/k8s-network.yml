@@ -1,0 +1,76 @@
+---
+- name: Configure Kubernetes Networking with Flannel
+  hosts: k8s_master
+  become: true
+  vars:
+    flannel_url: "https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml"
+    kube_config_dir: "{{ ansible_env.HOME }}/.kube"
+
+  tasks:
+    - name: Enable bridge-nf-call-iptables
+      sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: "1"
+        state: present
+        sysctl_set: yes
+        reload: yes
+
+    - name: Enable bridge-nf-call-ip6tables
+      sysctl:
+        name: net.bridge.bridge-nf-call-ip6tables
+        value: "1"
+        state: present
+        sysctl_set: yes
+        reload: yes
+
+    - name: Download Flannel manifest
+      get_url:
+        url: "{{ flannel_url }}"
+        dest: /tmp/kube-flannel.yml
+        mode: "0644"
+        force: yes # Ensure we get the latest version
+
+    - name: Apply Flannel network configuration
+      command: kubectl apply -f /tmp/kube-flannel.yml
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: flannel_result
+      changed_when: flannel_result.rc == 0
+
+    - name: Wait for kube-system pods to be ready
+      shell: |
+        kubectl get pods -n kube-system -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' | tr ' ' '\n' | sort | uniq
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: pod_status
+      until: pod_status.stdout == "True" or pod_status.stdout == "True\n"
+      retries: 30
+      delay: 10
+      changed_when: false
+
+    - name: Get all pods in kube-system namespace
+      command: kubectl get pods -n kube-system
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: pod_list
+      changed_when: false
+
+    - name: Display pod status
+      debug:
+        var: pod_list.stdout_lines
+
+    - name: Verify nodes are ready
+      shell: kubectl get nodes
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: node_status
+      changed_when: false
+
+    - name: Display node status
+      debug:
+        var: node_status.stdout_lines
+
+    - name: Clean up Flannel manifest
+      file:
+        path: /tmp/kube-flannel.yml
+        state: absent

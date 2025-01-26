@@ -1,0 +1,65 @@
+---
+docker_username: creativefree
+kubernetes_version: "latest"
+pod_network_cidr: "10.244.0.0/16"
+app_namespace: product-feedback
+database_namespace: database
+
+helm_charts:
+  - name: "my-ingress-chart"
+    version: "0.4.0"
+    release_name: "product-feedback-api-ingress"
+    namespace: "product-feedback"
+    values_files:
+      - values.product-feedback-api.yaml
+    set_values:
+      - "ingress.namespace=product-feedback"
+  - name: "my-ingress-chart"
+    version: "0.4.0"
+    release_name: "product-feedback-app-ingress"
+    namespace: "product-feedback"
+    values_files:
+      - values.product-feedback.yaml
+    set_values:
+      - "ingress.namespace=product-feedback"
+  - name: "my-ingress-chart"
+    version: "0.4.0"
+    release_name: "portfolio-site-ingress"
+    namespace: "portfolio-site"
+    values_files:
+      - values.portfolio.yaml
+    set_values:
+      - "ingress.namespace=portfolio-site"
+  - name: "cert-manager"
+    version: "0.3.0"
+    release_name: "product-feedback-cert"
+    namespace: "default"
+    set_values:
+      - "issuers.type=letsencrypt"
+      - "issuers.letsencrypt.enabled=true"
+      - "issuers.selfsigned.enabled=false"
+      - "issuers.letsencrypt.name=letsencrypt-prod"
+      - "issuers.letsencrypt.server=https://acme-v02.api.letsencrypt.org/directory"
+  - name: "database"
+    version: "0.1.0"
+    release_name: "database"
+    namespace: "database"
+  - name: "product-feedback-api"
+    version: "0.3.0"
+    release_name: "product-feedback-api"
+    namespace: "product-feedback"
+    set_values:
+      - "image.tag=latest"
+  - name: "product-feedback-app"
+    version: "0.3.0"
+    release_name: "product-feedback-app"
+    namespace: "product-feedback"    
+    set_values:
+      - "image.tag=latest"
+  - name: "portfolio-site"
+    version: "0.1.0"
+    release_name: "portfolio-site"
+    namespace: "portfolio-site"
+    set_values:
+      - "image.tag=latest"
+      - "replicaCount=3"

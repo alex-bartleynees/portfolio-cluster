@@ -1,0 +1,85 @@
+---
+- name: Setup Kubernetes Master Node
+  hosts: k8s_master
+  become: true
+  vars:
+    pod_network_cidr: "10.244.0.0/16" # Flannel default CIDR
+    kube_config_dir: "/home/{{ ansible_user }}/.kube"
+    allow_pods_on_master: true
+
+  tasks:
+    - name: Pre-pull required Docker images for Kubernetes master
+      command: kubeadm config images pull -v3
+      register: prepull_output
+      changed_when: prepull_output.rc == 0
+
+    - name: Initialize Kubernetes master node with Flannel network CIDR
+      command: >
+        kubeadm init
+        --token-ttl=0
+        --pod-network-cidr={{ pod_network_cidr }}
+        --apiserver-advertise-address={{ ansible_default_ipv4.address }}
+      register: kubeadm_init
+      args:
+        creates: /etc/kubernetes/admin.conf
+
+    - name: Create .kube directory for root
+      file:
+        path: /root/.kube
+        state: directory
+        mode: "0700"
+        owner: root
+        group: root
+
+    - name: Copy admin.conf to root's kubeconfig
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: yes
+        mode: "0600"
+        owner: root
+        group: root
+
+    - name: Create .kube directory for current user
+      file:
+        path: "{{ kube_config_dir }}"
+        state: directory
+        mode: "0755"
+      become: true
+
+    - name: Copy admin.conf to user's kube config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ kube_config_dir }}/config"
+        remote_src: yes
+        mode: "0600"
+      become: true
+
+    - name: Ensure correct permissions on .kube directory
+      file:
+        path: "{{ kube_config_dir }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        recurse: yes
+      become: true
+
+    - name: Remove taints for single-node setup
+      shell: |
+        kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true
+        kubectl taint nodes --all node-role.kubernetes.io/master- || true  # for older k8s versions
+      when: allow_pods_on_master
+      changed_when: false
+      register: taint_result
+      failed_when: false # Don't fail if taints don't exist
+
+    - name: Verify node taints
+      command: kubectl describe nodes
+      register: node_status
+      changed_when: false
+
+    - name: Display node taints
+      debug:
+        msg: "Current node taints: {{ node_status.stdout | regex_findall('Taints:.*') }}"
+      when: node_status.stdout is defined

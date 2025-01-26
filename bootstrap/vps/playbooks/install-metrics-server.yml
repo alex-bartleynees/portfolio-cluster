@@ -1,0 +1,89 @@
+---
+- name: Install Metrics Server with Certificate Management
+  hosts: k8s_master
+  become: true
+  vars:
+    kube_config_dir: "/home/{{ ansible_user }}/.kube"
+    vault_file: "group_vars/all/vault.yml"
+
+  tasks:
+    - name: Include vault variables
+      include_vars:
+        file: "{{ vault_file }}"
+
+    # Backup existing configuration
+    - name: Backup existing kubelet configuration
+      copy:
+        src: /etc/kubernetes/kubelet.conf
+        dest: /etc/kubernetes/kubelet.conf.backup
+        remote_src: yes
+      ignore_errors: yes
+
+    - name: Add metrics-server helm repository
+      command: helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: repo_add
+      changed_when: repo_add.rc == 0
+      failed_when:
+        - repo_add.rc != 0
+        - '"already exists" not in repo_add.stderr'
+      become: false
+
+    - name: Update helm repositories
+      command: helm repo update
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      when: repo_add.changed
+      become: false
+
+    # Install metrics-server with skip TLS verification
+    - name: Create metrics-server values
+      copy:
+        dest: /tmp/metrics-server-values.yaml
+        content: |
+          args:
+            - --kubelet-preferred-address-types=InternalIP
+            - --kubelet-insecure-tls
+          apiService:
+            create: true
+            insecureSkipTLSVerify: true
+
+    - name: Install metrics-server
+      command: >
+        helm upgrade --install metrics-server 
+        metrics-server/metrics-server
+        --namespace kube-system
+        -f /tmp/metrics-server-values.yaml
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      become: false
+
+    - name: Wait for metrics-server deployment
+      command: kubectl -n kube-system rollout status deployment metrics-server
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      become: false
+
+    - name: Clean up temporary files
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /tmp/metrics-server-values.yaml
+
+    - name: Wait for metrics API to be available
+      command: kubectl top nodes
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: top_nodes
+      retries: 12
+      delay: 5
+      until: top_nodes.rc == 0
+      become: false
+      ignore_errors: yes
+      
+    - name: Display node metrics
+      debug:
+        var: top_nodes.stdout_lines
+      become: false

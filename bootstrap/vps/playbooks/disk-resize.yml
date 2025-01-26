@@ -1,0 +1,51 @@
+- name: Check and resize disk
+  hosts: k8s_nodes
+  become: true
+  tasks:
+    - name: Install required packages
+      ansible.builtin.package:
+        name:
+          - parted
+          - cloud-utils-growpart
+        state: present
+
+    - name: Check disk size
+      command: fdisk -l /dev/sda
+      register: disk_size
+      changed_when: false
+
+    - name: Display disk size
+      debug:
+        var: disk_size.stdout_lines
+
+    # - name: Check partitions and free space
+    #   command: parted /dev/sda print free --- quit
+    #   register: partition_info
+    #   changed_when: false
+    #   ignore_errors: true # Add this
+
+    - name: Display partition info
+      debug:
+        var: partition_info.stdout_lines
+
+    - name: Grow partition
+      command: growpart /dev/sda 5
+      register: grow_result
+      failed_when:
+        - grow_result.rc != 0
+        - '"NOCHANGE" not in grow_result.stdout'
+      changed_when: '"NOCHANGE" not in grow_result.stdout'
+
+    - name: Grow XFS filesystem
+      command: xfs_growfs /
+      register: xfs_result
+      failed_when: xfs_result.rc != 0
+
+    - name: Check final disk size
+      command: df -h
+      register: final_size
+      changed_when: false
+
+    - name: Display final disk size
+      debug:
+        var: final_size.stdout_lines

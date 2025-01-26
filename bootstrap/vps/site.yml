@@ -1,0 +1,41 @@
+#- name: Check and resize disk
+# import_playbook: playbooks/disk-resize.yml
+
+- name: Cleanup
+  import_playbook: playbooks/cleanup.yml
+
+- name: Configure SELinux and Firewall
+  import_playbook: playbooks/selinux-firewall.yml
+
+- name: Apply common configuration
+  import_playbook: playbooks/install-kubernetes.yml
+
+- name: Setup Kubernetes master
+  import_playbook: playbooks/k8s-master.yml
+
+- name: Configure Kubernetes networking
+  import_playbook: playbooks/k8s-network.yml
+
+- name: Install Helm
+  import_playbook: playbooks/helm.yml
+
+- name: Install NGINX Ingress
+  import_playbook: playbooks/nginx-ingress.yml
+
+- name: Install cert-manager
+  import_playbook: playbooks/cert-manager.yml
+
+- name: Setup OpenEBS Storage
+  import_playbook: playbooks/openebs-setup.yml
+
+- name: Configure SQL Connection String Secret
+  import_playbook: playbooks/sql-secret.yml
+
+- name: Deploy Helm Charts
+  import_playbook: playbooks/deploy-charts.yml
+
+- name: Postgres Backup
+  import_playbook: playbooks/postgres-backup.yml
+
+- name: Install k9s
+  import_playbook: playbooks/k9s.yml

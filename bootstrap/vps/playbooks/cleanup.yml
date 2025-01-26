@@ -1,0 +1,121 @@
+---
+- name: Clean and Reset Kubernetes Installation
+  hosts: k8s_nodes
+  become: true
+  tasks:
+    - name: Reset kubeadm
+      command: kubeadm reset -f
+      ignore_errors: yes
+
+    - name: Stop all containers
+      shell: crictl ps -q | xargs -r crictl stop
+      ignore_errors: yes
+
+    - name: Remove all containers
+      shell: crictl ps -aq | xargs -r crictl rm
+      ignore_errors: yes
+
+    - name: Remove all container images
+      shell: crictl images -q | xargs -r crictl rmi
+      ignore_errors: yes
+
+    - name: Stop services
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      with_items:
+        - kubelet
+        - containerd
+      ignore_errors: yes
+
+    - name: Remove Kubernetes packages
+      dnf:
+        name:
+          - kubeadm
+          - kubelet
+          - kubectl
+          - kubernetes-cni
+        state: absent
+
+    - name: Remove container packages
+      dnf:
+        name:
+          - containerd.io
+          - docker-ce
+          - docker-ce-cli
+        state: absent
+
+    - name: Remove Kubernetes directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/kubernetes/
+        - /var/lib/kubelet/
+        - /var/lib/etcd/
+        - /etc/cni/
+        - /var/lib/cni/
+        - /var/run/kubernetes/
+        - /var/lib/containerd/
+        - /etc/containerd/
+        - /root/.kube/
+        - /home/{{ ansible_user }}/.kube/
+        - /etc/systemd/system/kubelet.service.d/
+        - /etc/systemd/system/containerd.service.d/
+
+    - name: Remove CNI configurations
+      file:
+        path: /etc/cni/net.d/
+        state: absent
+
+    - name: Clean iptables
+      shell: |
+        iptables -F
+        iptables -X
+        iptables -t nat -F
+        iptables -t nat -X
+        iptables -t raw -F
+        iptables -t raw -X
+        iptables -t mangle -F
+        iptables -t mangle -X
+      ignore_errors: yes
+
+    - name: Clean IPVS tables
+      shell: ipvsadm -C
+      ignore_errors: yes
+
+    - name: Remove kernel modules
+      modprobe:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - br_netfilter
+        - ip_vs
+        - ip_vs_rr
+        - ip_vs_wrr
+        - ip_vs_sh
+        - nf_conntrack
+      ignore_errors: yes
+
+    - name: Remove Kubernetes repository
+      file:
+        path: /etc/yum.repos.d/kubernetes.repo
+        state: absent
+
+    - name: Remove Docker repository
+      file:
+        path: /etc/yum.repos.d/docker-ce.repo
+        state: absent
+
+    - name: Clean DNF cache
+      command: dnf clean all
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Reboot server
+      reboot:
+        msg: "Rebooting to complete Kubernetes cleanup"
+        reboot_timeout: 600
