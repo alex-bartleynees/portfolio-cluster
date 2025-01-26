@@ -1,2 +1,3 @@
 resources:
   - apps/product-feedback-app/application.yaml
+  - ingress/product-feedback-app-ingress.yaml

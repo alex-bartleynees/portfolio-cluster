@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: portfolio-ingress
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: oci://registry-1.docker.io/creativefree/ingress-chart
+    targetRevision: 0.4.0
+    path: ./
+    helm:
+      valueFiles:
+        - product-feedback-app-ingress.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: product-feedback
+    syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
