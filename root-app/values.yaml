@@ -5,7 +5,7 @@ spec:
   source:
     repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
     targetRevision: HEAD
-    path: ../components/
+    path: components
   syncPolicy:
     automated:
       prune: false
