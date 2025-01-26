@@ -1,0 +1,27 @@
+certificate:
+  namespace: default
+  dnsNames:
+    - domain: alexbartleynees.com
+    - domain: www.alexbartleynees.com
+    - domain: product-feedback.alexbartleynees.com
+  secretName: website-tls
+  reflection:
+    enabled: true
+    autoEnabled: true
+    namespaces:
+      - portfolio-site
+      - product-feedback
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+
+issuers:
+  type: letsencrypt # or letsencrypt
+  selfsigned:
+    enabled: false
+  letsencrypt:
+    enabled: true
+    name: letsencrypt-prod
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: alexbartleynees@gmail.com
+    ingressClass: nginx
