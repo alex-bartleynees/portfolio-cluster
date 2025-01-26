@@ -1,0 +1,41 @@
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/add-base-url: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Cache Configuration
+    nginx.ingress.kubernetes.io/proxy-cache: "true"
+    nginx.ingress.kubernetes.io/proxy-cache-path: "/var/cache/nginx keys_zone=STATIC:10m inactive=7d use_temp_path=off"
+    # Asset caching
+    nginx.org/server-snippets: |
+      location ~ ^/_astro/.*\.(js|css|svg|ico)$ {
+        proxy_pass http://portfolio-site-svc:4321;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header X-Content-Type-Options "nosniff";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+      }
+  timeout:
+    connect: "5"
+    read: "60"
+    send: "60"
+  hosts:
+    - domain: alexbartleynees.com
+    - domain: www.alexbartleynees.com
+
+  namespace: portfolio-site
+
+  services:
+    - name: portfolio-site
+      path: /
+      pathType: Prefix
+      serviceName: portfolio-site-svc
+      servicePort: 4321
+
+tls:
+  enabled: true
+  secretName: website-tls

@@ -4,3 +4,4 @@ resources:
   - apps/product-feedback-api/application.yaml
   - ingress/product-feedback-api-ingress.yaml
   - apps/portfolio-site/application.yaml
+  - ingress/portfolio-site-ingress.yaml
