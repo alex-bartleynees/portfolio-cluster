@@ -14,7 +14,7 @@ spec:
         - values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: product-feedback
+    namespace: portfolio-site
   syncPolicy:
     automated:
       prune: false
