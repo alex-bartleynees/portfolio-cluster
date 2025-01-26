@@ -80,6 +80,10 @@
         helm upgrade --install argocd argo/argo-cd
         --namespace argocd
         --set server.config.params."server\.insecure"=true
+        --set configs.params.enableOCI=true
+        --set server.config.url=https://argo-cd.alexbartleynees.com
+        --set repoServer.env[0].name=HELM_ENABLE_OIDC
+        --set repoServer.env[0].value="true"
         --wait
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"
