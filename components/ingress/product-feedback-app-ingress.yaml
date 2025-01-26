@@ -5,17 +5,17 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: registry-1.docker.io/creativefree
-    targetRevision: 0.4.0
-    chart: my-ingress-chart
-    path: ./
-    helm:
-      valueFiles:
-        - $values/components/ingress/product-feedback-app-ingress-values.yaml
-    repoURL: 'https://github.com/alex-bartleynees/portfolio-cluster.git'
-    targetRevision: HEAD
-    ref: values
+  sources:
+    - repoURL: registry-1.docker.io/creativefree
+      targetRevision: 0.4.0
+      chart: my-ingress-chart
+      path: ./
+      helm:
+        valueFiles:
+          - $values/components/ingress/product-feedback-app-ingress-values.yaml
+    - repoURL: "https://github.com/alex-bartleynees/portfolio-cluster.git"
+      targetRevision: HEAD
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: product-feedback
