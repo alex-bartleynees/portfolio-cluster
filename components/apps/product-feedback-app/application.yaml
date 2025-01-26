@@ -2,18 +2,18 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: product-feedback-app
-  namespace: argocd
+  namespace: product-feedback
 spec:
   project: default
   source:
-    repoURL: git://github.com/alex-bartleynees/product-feedback-app.git
+    repoURL: https://github.com/alex-bartleynees/product-feedback-app.git
     path: deployment/helm-charts/product-feedback-app
     targetRevision: HEAD
     helm:
       valueFiles:
         - values.yaml
   destination:
-    server: kubernetes.default.svc
+    server: https://kubernetes.default.svc
     namespace: portfolio-site
   syncPolicy:
     automated:
