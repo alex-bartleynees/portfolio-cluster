@@ -19,6 +19,7 @@ spec:
         configs:
           params:
             enableOCI: true
+          cm:
             kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
         repoServer:
           env:
@@ -40,15 +41,13 @@ spec:
               volumeMounts:
                 - mountPath: /custom-tools
                   name: custom-tools
-          containers:
-            - name: argocd-repo-server
-              volumeMounts:
-                - mountPath: /usr/local/bin/kustomize
-                  name: custom-tools
-                  subPath: kustomize
-                - mountPath: /usr/local/bin/ksops
-                  name: custom-tools
-                  subPath: ksops
+          volumeMounts:
+            - mountPath: /usr/local/bin/kustomize
+              name: custom-tools
+              subPath: kustomize
+            - mountPath: /usr/local/bin/ksops
+              name: custom-tools
+              subPath: ksops
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
