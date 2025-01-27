@@ -28,6 +28,9 @@ spec:
           volumes:
             - name: custom-tools
               emptyDir: {}
+            - name: gpg-keys
+              secret:
+                secretName: sops-gpg
           initContainers:
             - name: install-ksops
               image: viaductoss/ksops:v4.3.2
@@ -48,6 +51,8 @@ spec:
             - mountPath: /usr/local/bin/ksops
               name: custom-tools
               subPath: ksops
+            - mountPath: /root/.gnupg
+              name: gpg-keys
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
