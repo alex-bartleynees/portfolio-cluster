@@ -1,0 +1,5 @@
+resources:
+  - argocd.yaml
+  - portfolio-site.yaml
+  - product-feedback-api.yaml
+  - product-feedback-app.yaml
