@@ -7,3 +7,4 @@ resources:
   - ingress/portfolio-site-ingress.yaml
   - certs/portfolio-site-cert.yaml
   - database/database.yaml
+  - ingress/nginx-ingress.yaml
