@@ -1,6 +1,5 @@
 resources:
   - apps/product-feedback-app/application.yaml
-  - ingress/product-feedback-app-ingress.yaml
   - apps/product-feedback-api/application.yaml
   - ingress/product-feedback-api-ingress.yaml
   - apps/portfolio-site/application.yaml
