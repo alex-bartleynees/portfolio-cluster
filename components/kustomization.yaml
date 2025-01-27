@@ -3,4 +3,4 @@ resources:
   - ingress/nginx-ingress.yaml
   - certs/portfolio-site-cert.yaml
   - database/database.yaml
-  - secrets
+  #- secrets
