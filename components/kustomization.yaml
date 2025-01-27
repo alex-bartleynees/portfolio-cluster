@@ -1,9 +1,5 @@
 resources:
-  - apps/product-feedback-app/application.yaml
-  - apps/product-feedback-api/application.yaml
-  - apps/portfolio-site/application.yaml
-  - ingress/portfolio-site-ingress.yaml
-  - certs/portfolio-site-cert.yaml
-  - database/database.yaml
-  - ingress/nginx-ingress.yaml
-  - apps/argocd/application.yaml
+  - apps
+  - ingress
+  - certs
+  - database

@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: product-feedback-api
+  name: portfolio-site
   namespace: argocd
 spec:
   project: default
   sources:
-    - repoURL: https://github.com/alex-bartleynees/ProductFeedback.API_V2.git
-      path: deployment/helm-charts/product-feedback-api
+    - repoURL: https://github.com/alex-bartleynees/portfolio.git
+      path: deployment/helm-charts/portfolio-site
       targetRevision: HEAD
       helm:
         valueFiles:
@@ -17,14 +17,16 @@ spec:
       chart: my-ingress-chart
       helm:
         valueFiles:
-          - $values/components/ingress/product-feedback-api-ingress-values.yaml
+          - $values/components/ingress/portfolio-site-ingress-values.yaml
     - repoURL: "https://github.com/alex-bartleynees/portfolio-cluster.git"
       targetRevision: HEAD
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: product-feedback
+    namespace: portfolio-site
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
