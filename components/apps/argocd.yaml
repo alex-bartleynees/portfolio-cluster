@@ -23,7 +23,7 @@ spec:
           env:
             - name: HELM_ENABLE_OIDC
               value: "true"
-          extraVolumes:
+          volumes:
             - name: custom-tools
               emptyDir: {}
             - name: gpg-keys
@@ -41,7 +41,7 @@ spec:
               volumeMounts:
                 - mountPath: /custom-tools
                   name: custom-tools
-          extraContainers:
+          containers:
             - name: ksops
               image: viaductoss/ksops:v4.1.1
               command: ["/bin/sh", "-c"]
@@ -55,12 +55,6 @@ spec:
                   subPath: ksops
                 - mountPath: /root/.gnupg
                   name: gpg-keys
-          volumeMounts:
-            - mountPath: /usr/local/bin/ksops
-              name: custom-tools
-              subPath: ksops
-            - mountPath: /root/.gnupg
-              name: gpg-keys
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
