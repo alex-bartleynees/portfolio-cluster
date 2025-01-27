@@ -20,14 +20,6 @@ spec:
           params:
             enableOCI: true
             kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
-          cm:
-            resource.customizations: |
-              Secret:
-                ignoreDifferences: |
-                  jsonPointers:
-                    - /metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration
-                    - /metadata/labels/argocd.argoproj.io~1instance
-                    - /data
         repoServer:
           env:
             - name: HELM_ENABLE_OIDC
