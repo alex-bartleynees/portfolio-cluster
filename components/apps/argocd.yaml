@@ -20,6 +20,12 @@ spec:
           params:
             enableOCI: true
             kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
+          cm:
+            resource.customizations: |
+              apps/SopsSecret:
+                ignoreDifferences: |
+                  jsonPointers:
+                    - /sops
         repoServer:
           env:
             - name: HELM_ENABLE_OIDC
