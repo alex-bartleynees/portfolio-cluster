@@ -8,7 +8,7 @@ spec:
   source:
     chart: argo-cd
     repoURL: https://argoproj.github.io/argo-helm
-    targetRevision: 5.51.6 # Specify the desired version
+    targetRevision: 5.51.6
     helm:
       values: |
         server:
@@ -23,6 +23,44 @@ spec:
           env:
             - name: HELM_ENABLE_OIDC
               value: "true"
+          volumes:
+            - name: custom-tools
+              emptyDir: {}
+            - name: gpg-keys
+              secret:
+                secretName: ksops-secret
+          initContainers:
+            - name: install-ksops
+              image: viaductoss/ksops:v4.1.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  echo "Installing KSOPS..."
+                  cp /usr/local/bin/ksops /custom-tools/
+                  echo "Done installing KSOPS"
+              volumeMounts:
+                - mountPath: /custom-tools
+                  name: custom-tools
+          extraContainers:
+            - name: ksops
+              image: viaductoss/ksops:v4.1.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  echo "Starting KSOPS sidecar..."
+                  while true; do sleep 3600; done
+              volumeMounts:
+                - mountPath: /usr/local/bin/ksops
+                  name: custom-tools
+                  subPath: ksops
+                - mountPath: /root/.gnupg
+                  name: gpg-keys
+        volumeMounts:
+          - mountPath: /usr/local/bin/ksops
+            name: custom-tools
+            subPath: ksops
+          - mountPath: /root/.gnupg
+            name: gpg-keys
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
