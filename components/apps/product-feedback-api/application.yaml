@@ -5,17 +5,26 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/alex-bartleynees/ProductFeedback.API_V2.git
-    path: deployment/helm-charts/product-feedback-api
-    targetRevision: HEAD
-    helm:
-      valueFiles:
-        - values.yaml
+  sources:
+    - repoURL: https://github.com/alex-bartleynees/ProductFeedback.API_V2.git
+      path: deployment/helm-charts/product-feedback-api
+      targetRevision: HEAD
+      helm:
+        valueFiles:
+          - values.yaml
+    - repoURL: registry-1.docker.io/creativefree
+      targetRevision: 0.4.0
+      chart: my-ingress-chart
+      helm:
+        valueFiles:
+          - $values/components/ingress/product-feedback-api-ingress-values.yaml
+    - repoURL: "https://github.com/alex-bartleynees/portfolio-cluster.git"
+      targetRevision: HEAD
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: product-feedback
   syncPolicy:
     automated:
-      prune: false
+      prune: true
       selfHeal: true
