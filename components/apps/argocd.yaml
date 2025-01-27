@@ -19,6 +19,7 @@ spec:
         configs:
           params:
             enableOCI: true
+            kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
         repoServer:
           env:
             - name: HELM_ENABLE_OIDC
@@ -26,35 +27,28 @@ spec:
           volumes:
             - name: custom-tools
               emptyDir: {}
-            - name: gpg-keys
-              secret:
-                secretName: ksops-secret
           initContainers:
             - name: install-ksops
-              image: viaductoss/ksops:v4.1.1
+              image: viaductoss/ksops:v4.3.3
               command: ["/bin/sh", "-c"]
               args:
                 - |
                   echo "Installing KSOPS..."
-                  cp /usr/local/bin/ksops /custom-tools/
-                  echo "Done installing KSOPS"
+                  mv ksops /custom-tools/;
+                  mv kustomize /custom-tools/;
+                  echo "Done.";
               volumeMounts:
                 - mountPath: /custom-tools
                   name: custom-tools
           containers:
-            - name: ksops
-              image: viaductoss/ksops:v4.1.1
-              command: ["/bin/sh", "-c"]
-              args:
-                - |
-                  echo "Starting KSOPS sidecar..."
-                  while true; do sleep 3600; done
+            - name: argocd-repo-server
               volumeMounts:
+                - mountPath: /usr/local/bin/kustomize
+                  name: custom-tools
+                  subPath: kustomize
                 - mountPath: /usr/local/bin/ksops
                   name: custom-tools
                   subPath: ksops
-                - mountPath: /root/.gnupg
-                  name: gpg-keys
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
