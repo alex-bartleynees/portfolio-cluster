@@ -13,8 +13,5 @@
 - name: Install Helm
   import_playbook: playbooks/helm.yml
 
-- name: Install cert-manager
-  import_playbook: playbooks/cert-manager.yml
-
 - name: Setup OpenEBS Storage
   import_playbook: playbooks/openebs-setup.yml
