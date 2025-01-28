@@ -19,6 +19,10 @@ spec:
           replicated:
             mayastor:
               enabled: false
+        storageClass:
+          hostPath:
+            enabled: true
+            isDefaultClass: true
   destination:
     server: https://kubernetes.default.svc
     namespace: openebs
