@@ -6,7 +6,7 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgresql
+  name: postgresql-backup
   namespace: database
 spec:
   selector:
