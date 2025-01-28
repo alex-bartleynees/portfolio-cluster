@@ -12,6 +12,3 @@
 
 - name: Install Helm
   import_playbook: playbooks/helm.yml
-
-- name: Setup OpenEBS Storage
-  import_playbook: playbooks/openebs-setup.yml
