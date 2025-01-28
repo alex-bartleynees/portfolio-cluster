@@ -18,6 +18,3 @@
 
 - name: Setup OpenEBS Storage
   import_playbook: playbooks/openebs-setup.yml
-
-- name: Postgres Backup
-  import_playbook: playbooks/postgres-backup.yml
