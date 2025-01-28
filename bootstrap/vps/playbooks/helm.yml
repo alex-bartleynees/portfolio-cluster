@@ -1,3 +1,4 @@
+---
 - name: Install and Configure Helm
   hosts: k8s_master
   become: true
@@ -44,10 +45,12 @@
         remote_src: yes
       when: helm_check.rc != 0
 
-    - name: Update Helm repos
-      command: helm repo update
+    - name: Create .helm directory for user
+      file:
+        path: "~/.helm"
+        state: directory
+        mode: "0755"
       become: false
-      when: helm_repo_add.changed
 
     - name: Clean up Helm installation files
       file:
