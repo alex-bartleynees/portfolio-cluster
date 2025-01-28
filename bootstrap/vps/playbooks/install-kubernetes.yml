@@ -30,20 +30,6 @@
           - iproute-tc
         state: present
 
-    # - name: Add Docker CE repository
-    #   get_url:
-    #     url: https://download.docker.com/linux/centos/docker-ce.repo
-    #     dest: /etc/yum.repos.d/docker-ce.repo
-    #     mode: "0644"
-    #
-    # - name: Install Docker CE
-    #   dnf:
-    #     name:
-    #       - docker-ce
-    #       - docker-ce-cli
-    #       - containerd.io
-    #     state: present
-
     - name: Create containerd config directory
       ansible.builtin.file:
         path: /etc/containerd
