@@ -31,19 +31,6 @@
       register: openebs_install
       changed_when: openebs_install.rc == 0
 
-    # - name: Wait for OpenEBS pods
-    #   command: >
-    #     kubectl wait --for=condition=Ready pods
-    #     --namespace openebs
-    #     --selector=openebs.io/component-name
-    #     --timeout=300s
-    #   environment:
-    #     KUBECONFIG: "{{ kube_config_dir }}/config"
-    #   register: wait_result
-    #   retries: 5
-    #   delay: 10
-    #   until: wait_result.rc == 0
-
     - name: Make OpenEBS local-hostpath the default StorageClass
       command: >
         kubectl patch storageclass openebs-hostpath -p
