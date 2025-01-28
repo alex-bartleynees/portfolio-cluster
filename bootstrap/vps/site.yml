@@ -19,8 +19,5 @@
 - name: Setup OpenEBS Storage
   import_playbook: playbooks/openebs-setup.yml
 
-- name: Configure SQL Connection String Secret
-  import_playbook: playbooks/sql-secret.yml
-
 - name: Postgres Backup
   import_playbook: playbooks/postgres-backup.yml
