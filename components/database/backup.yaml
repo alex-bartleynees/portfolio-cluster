@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: database
+  name: backup
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgresql-backup
-  namespace: database
+  namespace: backup
 spec:
   selector:
     matchLabels:
