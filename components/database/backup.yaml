@@ -27,9 +27,9 @@ spec:
             - name: POSTGRES_DATABASE
               value: all
             - name: POSTGRES_HOST
-              value: postgres-db.database.svc.cluster.local
+              value: "postgres-db.database.svc.cluster.local"
             - name: POSTGRES_PORT
-              value: 5432
+              value: "5432"
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
