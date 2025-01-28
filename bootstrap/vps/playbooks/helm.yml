@@ -3,14 +3,8 @@
   become: true
   vars:
     helm_version: "v3.16.3"
-    helm_architecture: "linux-amd64" # Change to linux-amd64 for x86_64 systems
+    helm_architecture: "linux-amd64"
     helm_checksum: "sha256:f5355c79190951eed23c5432a3b920e071f4c00a64f75e077de0dd4cb7b294ea"
-    helm_additional_repos:
-      - name: stable
-        url: https://charts.helm.sh/stable
-      - name: bitnami
-        url: https://charts.bitnami.com/bitnami
-      # Add more repositories as needed
 
   tasks:
     - name: Check if Helm is installed
@@ -49,16 +43,6 @@
         mode: "0755"
         remote_src: yes
       when: helm_check.rc != 0
-
-    - name: Add Helm repositories
-      command: helm repo add {{ item.name }} {{ item.url }}
-      loop: "{{ helm_additional_repos }}"
-      register: helm_repo_add
-      changed_when: helm_repo_add.rc == 0
-      failed_when:
-        - helm_repo_add.rc != 0
-        - '"already exists" not in helm_repo_add.stderr'
-      become: false
 
     - name: Update Helm repos
       command: helm repo update
