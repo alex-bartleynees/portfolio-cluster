@@ -7,3 +7,4 @@ resources:
   - database/backup.yaml
   - secrets
   - storage/application.yaml
+  - metrics/application.yaml
