@@ -30,10 +30,10 @@ spec:
               - grafana.alexbartleynees.com  
             path: /
             pathType: Prefix
-              tls:
-              - secretName: website-tls
-                hosts:
-                - grafana.alexbartleynees.com
+            tls:
+            - secretName: website-tls
+              hosts:
+              - grafana.alexbartleynees.com
         prometheus:
           prometheusSpec:
             retention: 15d
