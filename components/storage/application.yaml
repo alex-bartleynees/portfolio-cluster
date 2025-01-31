@@ -23,6 +23,7 @@ spec:
           hostPath:
             enabled: true
             isDefaultClass: true
+            volumeBindingMode: Immediate
   destination:
     server: https://kubernetes.default.svc
     namespace: openebs
