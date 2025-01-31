@@ -8,4 +8,4 @@ resources:
   - secrets
   - storage/application.yaml
   - metrics/application.yaml
-  - metrics/kube-promethesus-stack.yaml
+  - metrics/kube-prometheus-stack.yaml
