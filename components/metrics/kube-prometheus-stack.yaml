@@ -15,7 +15,7 @@ spec:
     helm:
       values: |
         crds:
-          enabled: false  
+          enabled: false
         grafana:
           admin:
             existingSecret: grafana-admin-credentials
@@ -51,6 +51,17 @@ spec:
                   resources:
                     requests:
                       storage: 50Gi
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                      - prometheus
+                  topologyKey: kubernetes.io/hostname
         alertmanager:
           alertmanagerSpec:
             storage:
@@ -61,6 +72,17 @@ spec:
                   resources:
                     requests:
                       storage: 10Gi
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                      - alertmanager
+                  topologyKey: kubernetes.io/hostname
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
