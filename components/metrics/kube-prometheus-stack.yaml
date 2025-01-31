@@ -19,8 +19,8 @@ spec:
         grafana:
           admin:
             existingSecret: grafana-admin-credentials
-            userKey: admin-user
-            passwordKey: admin-password
+            userKey: ADMIN_USER
+            passwordKey: ADMIN_PASSWORD
           persistence:
             enabled: true
             size: 10Gi
