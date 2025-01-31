@@ -9,3 +9,4 @@ resources:
   - storage/application.yaml
   - metrics/application.yaml
   - metrics/kube-prometheus-stack.yaml
+  - metrics/kube-prometheus-stack-crds.yaml
