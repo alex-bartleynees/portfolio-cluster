@@ -18,8 +18,15 @@
       - 443 # HTTPS
       - 30080 # NGINX Ingress HTTP NodePort
       - 30443 # NGINX Ingress HTTPS NodePort
+      - 9090 # Prometheus
+      - 9093 # Alertmanager
+      - 9100 # Node Exporter
+      - 3000 # Grafana
+      - 8080
+      - 9153
+      - 2381
+      - 10249
     configure_firewall: true # Set to true if you want to use firewalld
-
   tasks:
     - name: Set SELinux to permissive
       selinux:
@@ -60,6 +67,15 @@
     - name: Configure UDP port for Flannel VXLAN
       firewalld:
         port: "4789/udp"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      when: configure_firewall
+
+    - name: Allow Flannel Pod network source
+      firewalld:
+        source: "10.244.0.0/16"
+        zone: public
         permanent: yes
         state: enabled
         immediate: yes
