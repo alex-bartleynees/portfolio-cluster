@@ -1,0 +1,33 @@
+---
+- name: Deploy Root App Helm Chart
+  hosts: k8s_master
+  become: false
+  vars:
+    kube_config_dir: "/home/{{ ansible_user }}/.kube"
+    chart_path: "{{ playbook_dir }}/../../../root-app"
+    values_file: "{{ playbook_dir }}/../../../root-app/values.yaml"
+    remote_chart_path: "/tmp/root-app"
+    release_name: "root-app"
+    namespace: "argocd"
+
+  tasks:
+    - name: Install root app chart
+      command: >
+        helm upgrade --install {{ release_name }}
+        oci://registry-1.docker.io/{{ docker_username }}/root-app
+        --namespace {{ namespace }}
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: helm_install
+      changed_when: helm_install.rc == 0
+
+    - name: Show all deployed releases
+      command: helm ls -A
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      register: helm_ls
+      changed_when: false
+
+    - name: Display releases
+      debug:
+        var: helm_ls.stdout_lines

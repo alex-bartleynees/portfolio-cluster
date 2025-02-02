@@ -48,6 +48,12 @@
         enabled: false
       when: not configure_firewall
 
+    - name: Install firewalld
+      dnf:
+        name: firewalld
+        state: present
+      when: configure_firewall
+
     - name: Start and enable firewalld
       systemd:
         name: firewalld

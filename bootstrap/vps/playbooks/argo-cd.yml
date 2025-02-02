@@ -32,82 +32,20 @@
         - namespace_create.rc != 0
         - '"already exists" not in namespace_create.stderr'
 
-    - name: Create network policy
-      shell: |
-        cat <<'EOF' | kubectl apply -f -
-        apiVersion: networking.k8s.io/v1
-        kind: NetworkPolicy
-        metadata:
-          name: argocd-server-network-policy
-          namespace: argocd
-        spec:
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/name: argocd-server
-          policyTypes:
-          - Ingress
-          ingress:
-          - from:
-            - namespaceSelector: {}
-            ports:
-            - port: 80
-              protocol: TCP
-            - port: 443
-              protocol: TCP
-        EOF
-      environment:
-        KUBECONFIG: "{{ kube_config_dir }}/config"
-
     - name: Install Argo CD
       command: >
         helm upgrade --install argocd argo/argo-cd
         --namespace argocd
-        --set server.config.params."server\.insecure"=true
-        --set configs.params.enableOCI=true
-        --set server.config.url=https://argo-cd.alexbartleynees.com
-        --set repoServer.env[0].name=HELM_ENABLE_OIDC
-        --set repoServer.env[0].value="true"
+        --set server.config.url="https://argo-cd.alexbartleynees.com"
         --wait
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"
       register: argocd_install
       changed_when: argocd_install.rc == 0
 
-    - name: Create ingress for Argo CD
-      shell: |
-        cat <<'EOF' | kubectl apply -f -
-        apiVersion: networking.k8s.io/v1
-        kind: Ingress
-        metadata:
-          name: argocd-server
-          namespace: argocd
-          annotations:
-            cert-manager.io/cluster-issuer: "{{ cluster_issuer }}"
-            nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-            nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-        spec:
-          ingressClassName: nginx
-          tls:
-          - hosts:
-            - {{ argocd_hostname }}
-            secretName: argocd-server-tls
-          rules:
-          - host: {{ argocd_hostname }}
-            http:
-              paths:
-              - path: /
-                pathType: Prefix
-                backend:
-                  service:
-                    name: argocd-server
-                    port:
-                      number: 443
-        EOF
-      environment:
-        KUBECONFIG: "{{ kube_config_dir }}/config"
-
     - name: Get initial admin password
-      command: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+      shell: |
+        kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"
       register: admin_password

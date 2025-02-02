@@ -12,3 +12,12 @@
 
 - name: Install Helm
   import_playbook: playbooks/helm.yml
+
+- name: Setup ksops
+  import_playbook: playbooks/create-ksops-secret.yml
+
+- name: Install ArgoCD
+  import_playbook: playbooks/argo-cd.yml
+
+- name: Install Root App
+  import_playbook: playbooks/install-root-app.yml

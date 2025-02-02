@@ -8,6 +8,6 @@ spec:
     path: components
   syncPolicy:
     automated:
-      prune: false
+      prune: true
       selfHeal: true
 

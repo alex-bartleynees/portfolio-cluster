@@ -5,7 +5,7 @@ resources:
   - certs/cert-manager.yaml
   - database/database.yaml
   - database/backup.yaml
-  - secrets
+  #- secrets
   - storage/application.yaml
   - metrics/application.yaml
   - metrics/kube-prometheus-stack.yaml
