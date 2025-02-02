@@ -1,17 +1,17 @@
 ---
-- name: Deploy Root App Helm Chart
+- name: Deploy ArgoCD Root App Helm Chart
   hosts: k8s_master
   become: false
   vars:
     kube_config_dir: "/home/{{ ansible_user }}/.kube"
-    release_name: "root-app"
+    release_name: "argocd-root"
     namespace: "argocd"
 
   tasks:
     - name: Install root app chart
       command: >
         helm upgrade --install {{ release_name }}
-        oci://registry-1.docker.io/{{ docker_username }}/root-app
+        oci://registry-1.docker.io/{{ docker_username }}/argocd-root
         --namespace {{ namespace }}
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"

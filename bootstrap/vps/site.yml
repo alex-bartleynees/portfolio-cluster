@@ -19,5 +19,8 @@
 - name: Install ArgoCD
   import_playbook: playbooks/argo-cd.yml
 
+- name: Install ArgoCD Root app
+  import_playbook: playbooks/install-argocd-root.yaml
+
 - name: Install Root App
   import_playbook: playbooks/install-root-app.yml
