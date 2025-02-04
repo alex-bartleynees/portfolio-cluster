@@ -28,7 +28,7 @@ spec:
       prometheusremotewrite:
         endpoint: "http://kube-prometheus-stack-prometheus:9090/api/v1/write"
         resource_to_telemetry_conversion:
-          enable: true
+          enabled: true
 
     service:
       pipelines:
