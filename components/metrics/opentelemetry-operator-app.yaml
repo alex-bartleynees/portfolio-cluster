@@ -6,9 +6,14 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/open-telemetry/opentelemetry-operator.git
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
     targetRevision: 0.79.0
     chart: opentelemetry-operator
+    helm:
+      values: |
+        manager:
+          collectorImage:
+            repository: otel/opentelemetry-collector-k8s
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
