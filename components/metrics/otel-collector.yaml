@@ -4,7 +4,7 @@ metadata:
   name: my-collector
   namespace: monitoring
 spec:
-  mode: deployment
+  image: otel/opentelemetry-collector-contrib:latest
   config:
     receivers:
       otlp:
