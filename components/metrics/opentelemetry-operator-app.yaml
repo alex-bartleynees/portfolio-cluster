@@ -7,8 +7,8 @@ spec:
   project: default
   source:
     repoURL: https://github.com/open-telemetry/opentelemetry-operator.git
-    targetRevision: HEAD
-    path: config/default
+    targetRevision: 0.79.0
+    chart: opentelemetry-operator
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
