@@ -31,6 +31,9 @@ spec:
           enabled: true
 
     service:
+      telemetry:
+        logs:
+          level: "debug"
       pipelines:
         traces:
           receivers: [otlp]
