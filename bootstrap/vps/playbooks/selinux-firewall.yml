@@ -26,6 +26,8 @@
       - 9153
       - 2381
       - 10249
+      - 4317 # Otel Collector
+      - 4318 # Otel Collector
     configure_firewall: true # Set to true if you want to use firewalld
   tasks:
     - name: Set SELinux to permissive
