@@ -25,9 +25,16 @@ spec:
                   prefix: loki_index_
                   period: 24h
           singleBinary:
+            enabled: true
             replicas: 1
+            persistence:
+              enabled: true
+              size: 10Gi
           storage:
             type: filesystem
+          storageConfig:
+            filesystem:
+              directory: /data/loki/chunks
         deploymentMode: SingleBinary
         backend:
           replicas: 0
