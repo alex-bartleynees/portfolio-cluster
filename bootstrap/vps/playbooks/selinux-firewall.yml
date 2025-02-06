@@ -28,6 +28,8 @@
       - 10249
       - 4317 # Otel Collector
       - 4318 # Otel Collector
+      - 3100 # Loki
+      - 9095 # GRPC port
     configure_firewall: true # Set to true if you want to use firewalld
   tasks:
     - name: Set SELinux to permissive
