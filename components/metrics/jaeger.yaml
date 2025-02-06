@@ -28,7 +28,7 @@ spec:
               directory-key: /badger/key
               directory-value: /badger/data
         allInOne:
-          enabled: true
+          enabled: true  
           args:
             - --badger.ephemeral=false
             - --badger.directory-key=/badger/key
@@ -41,6 +41,37 @@ spec:
             size: 10Gi
             accessModes:
               - ReadWriteOnce
+          securityContext:
+            fsGroup: 1000
+            runAsUser: 1000
+            runAsGroup: 1000
+          service:
+            type: ClusterIP
+            ports:
+              - name: grpc
+                port: 14250
+                protocol: TCP
+                targetPort: 14250
+              - name: binary
+                port: 6832
+                protocol: UDP
+                targetPort: 6832
+              - name: http
+                port: 14268
+                protocol: TCP
+                targetPort: 14268
+              - name: zipkin
+                port: 9411
+                protocol: TCP
+                targetPort: 9411
+              - name: otlp
+                port: 4317
+                protocol: TCP
+                targetPort: 4317
+              - name: otlp-http
+                port: 4318
+                protocol: TCP
+                targetPort: 4318
         agent:
           enabled: false
         collector:
