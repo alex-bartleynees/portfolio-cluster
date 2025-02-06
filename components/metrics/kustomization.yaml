@@ -4,3 +4,4 @@ resources:
   - kube-prometheus-stack-crds.yaml
   - opentelemetry-operator-app.yaml
   - otel-collector.yaml
+  - loki.yaml

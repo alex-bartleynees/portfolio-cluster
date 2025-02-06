@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: grafana/loki
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 6.25.1
+    helm:
+      values: |
+        read:
+          replicas: 1
+        write:
+          replicas: 1
+        backend:
+          replicas: 1
+        loki:
+          auth_enabled: false
+          common_config:
+            replication_factor: 1
+        query_schedule:
+          max_outstanding_requests_per_tenant: 2048
+        persistence:
+          enabled: true
+          size: 10Gi
+          storageClassname: openebs-hostpath
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
