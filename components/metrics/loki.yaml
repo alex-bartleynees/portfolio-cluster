@@ -11,12 +11,6 @@ spec:
     targetRevision: 6.25.0
     helm:
       values: |
-        read:
-          replicas: 1
-        write:
-          replicas: 1
-        backend:
-          replicas: 1
         loki:
           auth_enabled: false
           common_config:
