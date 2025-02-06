@@ -20,7 +20,11 @@ spec:
         loki:
           auth_enabled: false
           common_config:
-            replication_factor: 1
+            replication_factor: 1        
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClassName: openebs-hostpath
         storage_config:
           tsdb_shipper:
             active_index_directory: /data/tsdb-index
@@ -30,10 +34,6 @@ spec:
             rules_directory: /var/loki/rules
         query_schedule:
           max_outstanding_requests_per_tenant: 2048
-        persistence:
-          enabled: true
-          size: 10Gi
-          storageClassName: openebs-hostpath
 
   destination:
     server: https://kubernetes.default.svc
