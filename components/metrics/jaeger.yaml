@@ -36,10 +36,6 @@ spec:
               mountPath: /mnt/data
         allInOne:
           enabled: true
-          args:
-            - --badger.ephemeral=false
-            - --badger.directory-key=/mnt/data/key
-            - --badger.directory-value=/mnt/data/value
           resources:
             limits:
               cpu: 1000m
@@ -54,11 +50,11 @@ spec:
               image: busybox:1.28
               command: ['sh', '-c']
               args:
-                - mkdir -p /mnt/data/key /mnt/data/value && 
-                  chown -R 1000:1000 /mnt/data
+                - mkdir -p /badger/data/key /badger/data/value && 
+                  chown -R 1000:1000 /badger/data
               volumeMounts:
                 - name: badger-data
-                  mountPath: /mnt/data
+                  mountPath: /badger/data
               securityContext:
                 runAsUser: 0
               resources:
