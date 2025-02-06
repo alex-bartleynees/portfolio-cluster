@@ -14,7 +14,7 @@ spec:
         loki:
           auth_enabled: false
           commonConfig:
-            path_prefix: /data/loki
+            path_prefix: /var/loki
             replication_factor: 1
             ring:
               kvstore:
@@ -32,9 +32,9 @@ spec:
             type: filesystem
           storageConfig:
             tsdb:
-              dir: /data/loki/tsdb
+              dir: /var/loki/tsdb
             filesystem:
-              directory: /data/loki/chunks
+              directory: /var/loki/chunks
           singleBinary:
             enabled: true
             replicas: 1
@@ -42,6 +42,7 @@ spec:
               enabled: true
               size: 10Gi
               storageClass: openebs-hostpath
+              mountPath: /var/loki
             resources:
               requests:
                 cpu: 100m
@@ -60,9 +61,6 @@ spec:
             enabled: false
           ruler:
             enabled: false
-          memberlist:
-            joinMembers:
-              - loki-memberlist
         deploymentMode: SingleBinary
         backend:
           replicas: 0
