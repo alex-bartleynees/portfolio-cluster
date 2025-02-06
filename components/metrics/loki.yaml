@@ -21,6 +21,12 @@ spec:
           auth_enabled: false
           common_config:
             replication_factor: 1
+        storage_config:
+          tsdb_shipper:
+            active_index_directory: /data/tsdb-index
+            cache_location: /data/tsdb-cache
+          filesystem:
+            directory: /var/loki/chunks
         query_schedule:
           max_outstanding_requests_per_tenant: 2048
         persistence:
