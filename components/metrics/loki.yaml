@@ -26,9 +26,9 @@ spec:
                   period: 24h
           storage:
             type: filesystem
-        singleBinary:
-          replicas: 1
-        deploymentMode: SingleBinary
+          singleBinary:
+            replicas: 1
+          deploymentMode: SingleBinary
         query_schedule:
           max_outstanding_requests_per_tenant: 2048
 
