@@ -19,6 +19,12 @@ spec:
             ephemeral: false
             directory-key: /badger/data/key
             directory-value: /badger/data/value
+            persistence:
+              enabled: true
+              storageClassName: openebs-hostpath
+              accessModes:
+                - ReadWriteOnce
+              size: 10Gi
         allInOne:
           enabled: true
           args:
@@ -32,6 +38,8 @@ spec:
             requests:
               cpu: 500m
               memory: 512Mi
+          storage:
+            type: badger
           persistence:
             enabled: true
             storageClass: openebs-hostpath
@@ -75,6 +83,10 @@ spec:
                 port: 14269
                 protocol: TCP
                 targetPort: 14269
+              - name: query
+                port: 16686
+                protocol: TCP
+                targetPort: 16686
               - name: zipkin
                 port: 9411
                 protocol: TCP
