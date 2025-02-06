@@ -30,6 +30,7 @@ spec:
             persistence:
               enabled: true
               size: 10Gi
+              storageClassName: openebs-hostpath
           storage:
             type: filesystem
           storageConfig:
