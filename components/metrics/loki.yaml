@@ -30,13 +30,6 @@ spec:
                 index:
                   prefix: loki_index_
                   period: 24h
-          storage_config:
-            tsdb_shipper:
-              active_index_directory: /data/tsdb-index
-              cache_location: /data/tsdb-cache
-          filesystem:
-            chunks_directory: /var/loki/chunks
-            rules_directory: /var/loki/rules
         query_schedule:
           max_outstanding_requests_per_tenant: 2048
 
