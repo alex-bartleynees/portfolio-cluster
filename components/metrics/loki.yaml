@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    chart: loki
+    chart: grafana/loki
     repoURL: https://grafana.github.io/helm-charts
     targetRevision: 6.25.1
     helm:
@@ -26,7 +26,7 @@ spec:
         persistence:
           enabled: true
           size: 10Gi
-          storageClassname: openebs-hostpath
+          storageClassName: openebs-hostpath
 
   destination:
     server: https://kubernetes.default.svc
