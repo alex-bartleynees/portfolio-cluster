@@ -33,6 +33,9 @@ spec:
             ephemeral: false
             directory-key: /badger/data/key
             directory-value: /badger/data/value
+            persistence:
+              enabled: true
+              useExistingPvcName: jaeger-badger-data
         allInOne:
           enabled: true
           args:
@@ -46,12 +49,6 @@ spec:
             requests:
               cpu: 500m
               memory: 512Mi
-          storage:
-            type: badger
-            badger:
-              persistence:
-                enabled: true
-                useExistingPvcName: jaeger-badger-data
           podSecurityContext:
             fsGroup: 1000
           initContainers:
