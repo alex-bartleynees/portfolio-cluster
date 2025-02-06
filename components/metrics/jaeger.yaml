@@ -31,17 +31,15 @@ spec:
           type: badger
           badger:
             ephemeral: false
-            directory-key: /badger/data/key
-            directory-value: /badger/data/value
             persistence:
-              enabled: true
               useExistingPvcName: jaeger-badger-data
+              mountPath: /mnt/data
         allInOne:
           enabled: true
           args:
             - --badger.ephemeral=false
-            - --badger.directory-key=/badger/data/key
-            - --badger.directory-value=/badger/data/value
+            - --badger.directory-key=/mnt/data/key
+            - --badger.directory-value=/mnt/data/value
           resources:
             limits:
               cpu: 1000m
@@ -56,11 +54,11 @@ spec:
               image: busybox:1.28
               command: ['sh', '-c']
               args:
-                - mkdir -p /badger/data/key /badger/data/value && 
-                  chown -R 1000:1000 /badger
+                - mkdir -p /mnt/data/key /mnt/data/value && 
+                  chown -R 1000:1000 /mnt/data
               volumeMounts:
-                - name: data
-                  mountPath: /badger/data
+                - name: badger-data
+                  mountPath: /mnt/data
               securityContext:
                 runAsUser: 0
               resources:
