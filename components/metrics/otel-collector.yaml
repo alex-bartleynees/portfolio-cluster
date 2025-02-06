@@ -33,6 +33,11 @@ spec:
       loki:
         endpoint: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
 
+      otlp:
+        endpoint: "jaeger-collector.monitoring.svc.cluster.local:4317"
+        tls:
+          insecure: true
+
     service:
       telemetry:
         logs:
@@ -41,7 +46,7 @@ spec:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [debug]
+          exporters: [debug, otlp]
         metrics:
           receivers: [otlp]
           processors: [memory_limiter, batch]
