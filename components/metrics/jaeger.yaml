@@ -13,82 +13,14 @@ spec:
       values: |
         provisionDataStore:
           cassandra: false
-          badger:
-            enabled: true
-            persistence:
-              enabled: true
-              storageClassName: openebs-hostpath
-              accessModes:
-                - ReadWriteOnce
-              size: 10Gi
         storage:
           type: badger
-          options:
-            badger:
-              directory-key: /data/badger/key
-              directory-value: /data/badger/data
-              ephemeral: false
         allInOne:
           enabled: true
-          command:
-            - "/go/bin/all-in-one"
-          args:
-            - "--badger.ephemeral=false"
-            - "--badger.directory-key=/data/badger/key"
-            - "--badger.directory-value=/data/badger/data"
-          persistence:
-            enabled: true
-            storageClass: openebs-hostpath
-            mountPath: /data
-            size: 10Gi
-            accessModes:
-              - ReadWriteOnce
-          securityContext:
+          podSecurityContext:
             runAsUser: 1000
             runAsGroup: 1000
             fsGroup: 1000
-          volumeMounts:
-            - name: data
-              mountPath: /data
-          initContainers:
-            - name: init-storage
-              image: busybox:1.28
-              command: ['sh', '-c']
-              args:
-                - mkdir -p /data/badger/key /data/badger/data && 
-                  chown -R 1000:1000 /data/badger
-              volumeMounts:
-                - name: data
-                  mountPath: /data
-              securityContext:
-                runAsUser: 0
-          service:
-            type: ClusterIP
-            ports:
-              - name: grpc
-                port: 14250
-                protocol: TCP
-                targetPort: 14250
-              - name: binary
-                port: 6832
-                protocol: UDP
-                targetPort: 6832
-              - name: http
-                port: 14268
-                protocol: TCP
-                targetPort: 14268
-              - name: zipkin
-                port: 9411
-                protocol: TCP
-                targetPort: 9411
-              - name: otlp
-                port: 4317
-                protocol: TCP
-                targetPort: 4317
-              - name: otlp-http
-                port: 4318
-                protocol: TCP
-                targetPort: 4318
         agent:
           enabled: false
         collector:
