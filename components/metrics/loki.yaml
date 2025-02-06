@@ -21,10 +21,6 @@ spec:
           auth_enabled: false
           common_config:
             replication_factor: 1        
-          persistence:
-            enabled: true
-            size: 10Gi
-            storageClassName: openebs-hostpath
         storage_config:
           tsdb_shipper:
             active_index_directory: /data/tsdb-index
