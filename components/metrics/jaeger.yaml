@@ -23,21 +23,22 @@ spec:
               size: 10Gi
         storage:
           type: badger
-          options:
-            badger:
-              directory-key: /badger/key
-              directory-value: /badger/data
+          badger:
+            ephemeral: false
+            directory-key: /data/badger/key
+            directory-value: /data/badger/data
         allInOne:
-          enabled: true  
+          enabled: true
           args:
             - --badger.ephemeral=false
-            - --badger.directory-key=/badger/key
-            - --badger.directory-value=/badger/data
+            - --badger.directory-key=/data/badger/key
+            - --badger.directory-value=/data/badger/data
           storage:
             type: badger
           persistence:
             enabled: true
             storageClass: openebs-hostpath
+            mountPath: /data
             size: 10Gi
             accessModes:
               - ReadWriteOnce
@@ -45,6 +46,18 @@ spec:
             fsGroup: 1000
             runAsUser: 1000
             runAsGroup: 1000
+          initContainers:
+            - name: init-storage
+              image: busybox:1.28
+              command: ['sh', '-c']
+              args:
+                - mkdir -p /data/badger/key /data/badger/data && 
+                  chown -R 1000:1000 /data/badger
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+              securityContext:
+                runAsUser: 0
           service:
             type: ClusterIP
             ports:
