@@ -8,21 +8,45 @@ spec:
   source:
     chart: jaeger
     repoURL: https://jaegertracing.github.io/helm-charts
-    targetRevision: 6.25.0
+    targetRevision: 3.4.0
     helm:
       values: |
         provisionDataStore:
           cassandra: false
-
+          badger:
+            enabled: true
+            persistence:
+              enabled: true
+              storageClassName: openebs-hostpath
+              accessModes:
+                - ReadWriteOnce
+              size: 10Gi
+        storage:
+          type: badger
+          options:
+            badger:
+              directory-key: /badger/key
+              directory-value: /badger/data
         allInOne:
           enabled: true
+          args:
+            - --badger.ephemeral=false
+            - --badger.directory-key=/badger/key
+            - --badger.directory-value=/badger/data
+          storage:
+            type: badger
+          persistence:
+            enabled: true
+            storageClass: openebs-hostpath
+            size: 10Gi
+            accessModes:
+              - ReadWriteOnce
         agent:
           enabled: false
         collector:
           enabled: false
         query:
           enabled: false
-
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
