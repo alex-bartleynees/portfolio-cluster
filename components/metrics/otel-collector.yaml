@@ -30,6 +30,9 @@ spec:
         resource_to_telemetry_conversion:
           enabled: true
 
+      loki:
+        endpoint: http://loki.monitoring.svc.cluster.local:3100/api/v1/push
+
     service:
       telemetry:
         logs:
@@ -43,3 +46,7 @@ spec:
           receivers: [otlp]
           processors: [memory_limiter, batch]
           exporters: [prometheusremotewrite]
+        logs:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [loki]
