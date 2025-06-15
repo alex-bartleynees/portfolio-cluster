@@ -8,3 +8,4 @@ resources:
   - secrets
   - storage/application.yaml
   - metrics
+  - tailscale/tailscale-operator.yaml
