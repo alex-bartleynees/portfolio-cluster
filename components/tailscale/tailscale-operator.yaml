@@ -13,17 +13,15 @@ spec:
     targetRevision: "*"
     helm:
       values: |
-        oauth:
-          clientId:
-            valueFrom:
-              secretKeyRef:
-                name: tailscale-oauth
-                key: CLIENT_ID
-          clientSecret:
-            valueFrom:
-              secretKeyRef:
-                name: tailscale-oauth
-                key: CLIENT_SECRET
+        oauth: {}
+        oauthSecretVolume:
+          secret:
+            secretName: tailscale-oauth
+            items:
+            - key: CLIENT_ID
+              path: client_id
+            - key: CLIENT_SECRET
+              path: client_secret
   destination:
     server: https://kubernetes.default.svc
     namespace: tailscale
@@ -33,3 +31,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+
