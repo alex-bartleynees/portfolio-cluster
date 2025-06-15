@@ -9,6 +9,5 @@ spec:
   type: ExternalName
   externalName: media.tail8ca202.ts.net
   ports:
-    - port: 80
-      targetPort: 8096
+    - port: 8096
 
