@@ -1,0 +1,4 @@
+resources:
+- tailscale-operator.yaml
+- service.yaml
+- ingress.yaml
