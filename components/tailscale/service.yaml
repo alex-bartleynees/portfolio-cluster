@@ -7,7 +7,8 @@ metadata:
   namespace: media-tailscale
 spec:
   type: ExternalName
-  externalName: media.tail8ca202.ts.net
+  externalName: placeholder
   ports:
     - port: 8096
+      protocol: TCP
 
