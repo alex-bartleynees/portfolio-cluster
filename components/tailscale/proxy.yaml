@@ -40,7 +40,7 @@ data:
     server {
         listen 8096;
         location / {
-            proxy_pass http://media.tail8ca202.ts.net:8096;
+            proxy_pass http://100.98.211.116:8096;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
