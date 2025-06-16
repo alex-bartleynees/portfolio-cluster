@@ -1,99 +1,16 @@
-# Create ProxyClass and RBAC for Tailscale sidecar injection
-apiVersion: tailscale.com/v1alpha1
-kind: ProxyClass
-metadata:
-  name: default
-spec: {}
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: proxies
-  namespace: tailscale
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  namespace: tailscale
-  name: proxies
-rules:
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["*"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: proxies
-  namespace: tailscale
-subjects:
-- kind: ServiceAccount
-  name: proxies
-  namespace: tailscale
-roleRef:
-  kind: Role
-  name: proxies
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: jellyfin-proxy
-  namespace: tailscale
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: jellyfin-proxy
-  template:
-    metadata:
-      labels:
-        app: jellyfin-proxy
-      annotations:
-        tailscale.com/proxy-class: default
-    spec:
-      serviceAccountName: proxies
-      containers:
-      - name: jellyfin-proxy
-        image: nginx:alpine
-        ports:
-        - containerPort: 8096
-        volumeMounts:
-        - name: nginx-config
-          mountPath: /etc/nginx/conf.d/default.conf
-          subPath: default.conf
-      volumes:
-      - name: nginx-config
-        configMap:
-          name: jellyfin-proxy-config
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: jellyfin-proxy-config
-  namespace: tailscale
-data:
-  default.conf: |
-    server {
-        listen 8096;
-        location / {
-            proxy_pass http://100.98.211.116:8096;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-    }
----
+# Tailscale egress proxy to connect cluster to your tailnet
 apiVersion: v1
 kind: Service
 metadata:
-  name: jellyfin-proxy-service
+  name: jellyfin-egress
   namespace: tailscale
+  annotations:
+    tailscale.com/tailnet-fqdn: jellyfin.tailscale.ts.net
 spec:
-  selector:
-    app: jellyfin-proxy
+  type: ExternalName
+  externalName: media.tail8ca202.ts.net
   ports:
   - port: 8096
     targetPort: 8096
+    protocol: TCP
 
