@@ -1,10 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    tailscale.com/tailnet-fqdn: media.tail8ca202.ts.net
   name: media-tailscale
   namespace: tailscale
+  annotations:
+    tailscale.com/tailnet-fqdn: media.tail8ca202.ts.net
 spec:
-  type: ExternalName
-  externalName: placeholder
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+    - port: 80
+      targetPort: 8096
+      protocol: TCP
+      name: http

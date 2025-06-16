@@ -22,4 +22,4 @@ spec:
               service:
                 name: media-tailscale
                 port:
-                  number: 8096
+                  number: 80
