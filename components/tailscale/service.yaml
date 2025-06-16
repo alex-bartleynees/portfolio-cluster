@@ -5,7 +5,7 @@ metadata:
   namespace: tailscale
 spec:
   type: ExternalName
-  externalName: media.tailscale.ts.net
+  externalName: jellyfin-proxy-service.tailscale.svc.cluster.local
   ports:
     - port: 8096
       targetPort: 8096
