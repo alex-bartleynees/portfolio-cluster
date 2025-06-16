@@ -4,11 +4,7 @@ metadata:
   annotations:
     tailscale.com/tailnet-fqdn: media.tail8ca202.ts.net
   name: media-tailscale
-  namespace: media-tailscale
+  namespace: tailscale
 spec:
   type: ExternalName
   externalName: placeholder
-  ports:
-    - port: 8096
-      protocol: TCP
-

@@ -1,5 +1,6 @@
 resources:
-- tailscale-operator.yaml
-- namespace.yaml
-- service.yaml
-- ingress.yaml
+  - tailscale-operator.yaml
+  - dns-config.yaml
+  - service.yaml
+  - ingress.yaml
+
