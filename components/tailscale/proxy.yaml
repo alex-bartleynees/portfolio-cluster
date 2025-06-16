@@ -1,0 +1,26 @@
+apiVersion: tailscale.com/v1alpha1
+kind: Ingress
+metadata:
+  name: media-ingress
+  namespace: tailscale
+spec:
+  ingressClassName: tailscale
+  defaultBackend:
+    service:
+      name: media-backend
+      port:
+        number: 8096
+  tls:
+  - hosts:
+    - media
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-backend
+  namespace: tailscale
+spec:
+  type: ExternalName
+  externalName: media.tail8ca202.ts.net
+  ports:
+  - port: 8096

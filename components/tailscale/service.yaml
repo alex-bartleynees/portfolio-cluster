@@ -4,21 +4,10 @@ metadata:
   name: media-tailscale
   namespace: tailscale
 spec:
-  type: ClusterIP
+  type: ExternalName
+  externalName: media.tailscale.ts.net
   ports:
     - port: 8096
       targetPort: 8096
       protocol: TCP
       name: http
----
-apiVersion: v1
-kind: Endpoints
-metadata:
-  name: media-tailscale
-  namespace: tailscale
-subsets:
-  - addresses:
-      - ip: 100.98.211.116
-    ports:
-      - port: 8096
-        name: http

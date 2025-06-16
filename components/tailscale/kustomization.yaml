@@ -3,4 +3,5 @@ resources:
   - dns-config.yaml
   - service.yaml
   - ingress.yaml
+  - proxy.yaml
 
