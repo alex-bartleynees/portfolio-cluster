@@ -9,7 +9,7 @@ spec:
   type: LoadBalancer
   loadBalancerClass: tailscale
   ports:
-    - port: 80
+    - port: 8096
       targetPort: 8096
       protocol: TCP
       name: http
