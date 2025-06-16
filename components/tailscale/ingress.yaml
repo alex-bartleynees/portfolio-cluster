@@ -6,7 +6,6 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    tailscale.com/experimental-forward-cluster-traffic-via-ingress: "true"
 spec:
   tls:
     - hosts:
