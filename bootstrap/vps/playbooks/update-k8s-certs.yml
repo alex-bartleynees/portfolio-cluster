@@ -1,0 +1,83 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Get Tailscale hostname
+      command: tailscale status --json
+      register: tailscale_status_json
+      failed_when: false
+
+    - name: Parse Tailscale hostname
+      set_fact:
+        tailscale_hostname: "{{ (tailscale_status_json.stdout | from_json).Self.DNSName | regex_replace('\\.$', '') }}"
+      when: tailscale_status_json.rc == 0
+
+    - name: Display Tailscale hostname
+      debug:
+        msg: "Tailscale hostname: {{ tailscale_hostname }}"
+      when: tailscale_hostname is defined
+
+    - name: Create kubeadm config patch
+      copy:
+        content: |
+          apiVersion: kubeadm.k8s.io/v1beta3
+          kind: ClusterConfiguration
+          apiServer:
+            certSANs:
+            - "{{ ansible_default_ipv4.address }}"
+            - "{{ ansible_hostname }}"
+            - "{{ ansible_fqdn }}"
+            - "{{ tailscale_hostname }}"
+            - "localhost"
+            - "127.0.0.1"
+            - "kubernetes"
+            - "kubernetes.default"
+            - "kubernetes.default.svc"
+            - "kubernetes.default.svc.cluster.local"
+        dest: /tmp/kubeadm-config-patch.yaml
+      when: tailscale_hostname is defined
+
+    - name: Backup existing certificates
+      shell: |
+        mkdir -p /etc/kubernetes/pki/backup
+        cp /etc/kubernetes/pki/apiserver.* /etc/kubernetes/pki/backup/
+      when: tailscale_hostname is defined
+
+    - name: Delete old API server certificates
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/kubernetes/pki/apiserver.crt
+        - /etc/kubernetes/pki/apiserver.key
+      when: tailscale_hostname is defined
+
+    - name: Generate new certificates
+      shell: |
+        kubeadm init phase certs apiserver --config /tmp/kubeadm-config-patch.yaml
+      when: tailscale_hostname is defined
+
+    - name: Restart kubelet and containerd
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - kubelet
+        - containerd
+      when: tailscale_hostname is defined
+
+    - name: Wait for API server to be ready
+      uri:
+        url: "https://{{ tailscale_hostname }}:6443/healthz"
+        validate_certs: no
+        timeout: 30
+      register: api_health
+      until: api_health.status == 200
+      retries: 10
+      delay: 5
+      when: tailscale_hostname is defined
+
+    - name: Display success message
+      debug:
+        msg: "Kubernetes API server certificate updated. You can now use: kubectl --server=https://{{ tailscale_hostname }}:6443"
+      when: tailscale_hostname is defined
