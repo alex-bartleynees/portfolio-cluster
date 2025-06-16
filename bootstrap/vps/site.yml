@@ -13,6 +13,9 @@
 - name: Install Helm
   import_playbook: playbooks/helm.yml
 
+- name: Install Tailscale
+  import_playbook: playbooks/tailscale.yml
+
 - name: Setup ksops
   import_playbook: playbooks/create-ksops-secret.yml
 

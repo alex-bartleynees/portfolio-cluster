@@ -1,0 +1,52 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    tailscale_authkey: "{{ vault_tailscale_authkey | default('') }}"
+  
+  tasks:
+    - name: Add Tailscale repository
+      yum_repository:
+        name: tailscale-stable
+        description: Tailscale stable
+        baseurl: https://pkgs.tailscale.com/stable/rhel/9/x86_64/
+        gpgkey: https://pkgs.tailscale.com/stable/rhel/9/repo.gpg
+        gpgcheck: yes
+        enabled: yes
+
+    - name: Install Tailscale
+      dnf:
+        name: tailscale
+        state: present
+
+    - name: Start and enable Tailscale
+      systemd:
+        name: tailscaled
+        state: started
+        enabled: yes
+
+    - name: Check if Tailscale is already connected
+      command: tailscale status
+      register: tailscale_status
+      failed_when: false
+      changed_when: false
+
+    - name: Connect to Tailscale
+      command: "tailscale up --authkey={{ tailscale_authkey }} --accept-routes"
+      when: 
+        - tailscale_authkey != ""
+        - "'Logged out' in tailscale_status.stdout or tailscale_status.rc != 0"
+      register: tailscale_connect
+
+    - name: Display connection status
+      debug:
+        msg: "Tailscale connection completed"
+      when: tailscale_connect is changed
+
+    - name: Show manual connection instructions if no authkey
+      debug:
+        msg: |
+          No authkey provided. To connect manually, run:
+          sudo tailscale up --accept-routes
+          Then authenticate via the provided URL.
+      when: tailscale_authkey == ""

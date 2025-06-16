@@ -1,7 +1,5 @@
 resources:
-  - tailscale-operator.yaml
-  - dns-config.yaml
+  - namespace.yaml
   - service.yaml
   - ingress.yaml
-  - proxy-deployment.yaml
 
