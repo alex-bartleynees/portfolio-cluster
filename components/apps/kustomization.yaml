@@ -1,3 +1,5 @@
 resources:
   - portfolio-site.yaml
   - product-feedback-api.yaml
+  - jellyfin.yaml
+  - jellyseer.yaml
