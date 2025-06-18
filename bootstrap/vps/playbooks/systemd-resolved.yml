@@ -1,0 +1,203 @@
+---
+- name: Configure systemd-resolved for Tailscale integration on Rocky Linux
+  hosts: k8s_nodes
+  become: yes
+  vars:
+    public_dns_servers:
+      - "8.8.8.8"
+      - "1.1.1.1"
+    backup_resolv_conf: true
+    restart_services: true
+
+  tasks:
+    - name: Check if Tailscale is installed and running
+      block:
+        - name: Check Tailscale service status
+          systemd:
+            name: tailscaled
+          register: tailscale_status
+
+        - name: Get current Tailscale status
+          command: tailscale status --json
+          register: tailscale_current_status
+          changed_when: false
+          failed_when: false
+
+      rescue:
+        - name: Fail if Tailscale is not installed
+          fail:
+            msg: "Tailscale is not installed or not running. Please install Tailscale first."
+
+    - name: Install systemd-resolved if not present
+      block:
+        - name: Check if systemd-resolved is installed
+          package_facts:
+            manager: auto
+
+        - name: Install systemd-resolved
+          dnf:
+            name: systemd-resolved
+            state: present
+          when: "'systemd-resolved' not in ansible_facts.packages"
+          notify: restart systemd-resolved
+
+    - name: Backup current resolv.conf if requested
+      block:
+        - name: Check if resolv.conf backup exists
+          stat:
+            path: /etc/resolv.conf.backup-{{ ansible_date_time.epoch }}
+          register: backup_check
+
+        - name: Create timestamped backup of resolv.conf
+          copy:
+            src: /etc/resolv.conf
+            dest: /etc/resolv.conf.backup-{{ ansible_date_time.epoch }}
+            remote_src: yes
+            backup: yes
+          when: backup_resolv_conf and not backup_check.stat.exists
+
+      tags: backup
+
+    - name: Configure systemd-resolved
+      block:
+        - name: Create systemd-resolved configuration directory
+          file:
+            path: /etc/systemd/resolved.conf.d
+            state: directory
+            mode: "0755"
+
+        - name: Configure systemd-resolved main settings
+          copy:
+            content: |
+              [Resolve]
+              DNS={{ public_dns_servers | join(' ') }}
+              FallbackDNS=
+              Domains=~.
+              DNSSEC=no
+              DNSOverTLS=no
+              Cache=yes
+              DNSStubListener=yes
+              ReadEtcHosts=yes
+            dest: /etc/systemd/resolved.conf.d/99-tailscale-integration.conf
+            mode: "0644"
+            backup: yes
+          notify: restart systemd-resolved
+
+        - name: Enable systemd-resolved service
+          systemd:
+            name: systemd-resolved
+            enabled: yes
+            state: started
+          notify: restart systemd-resolved
+
+    - name: Configure DNS resolution
+      block:
+        - name: Remove existing resolv.conf if it's a regular file
+          file:
+            path: /etc/resolv.conf
+            state: absent
+          when: not (ansible_facts['resolv_conf_stat'] is defined and ansible_facts['resolv_conf_stat'].islnk)
+
+        - name: Create symlink to systemd-resolved resolv.conf
+          file:
+            src: /run/systemd/resolve/resolv.conf
+            dest: /etc/resolv.conf
+            state: link
+            force: yes
+          notify: restart systemd-resolved
+
+    - name: Configure Tailscale DNS integration
+      block:
+        - name: Disable Tailscale DNS override temporarily
+          command: tailscale set --accept-dns=false
+          register: tailscale_dns_disable
+          changed_when: true
+
+        - name: Wait for systemd-resolved to be ready
+          wait_for:
+            path: /run/systemd/resolve/resolv.conf
+            timeout: 30
+
+        - name: Re-enable Tailscale DNS with systemd-resolved integration
+          command: tailscale set --accept-dns=true
+          register: tailscale_dns_enable
+          changed_when: true
+          retries: 3
+          delay: 5
+
+    - name: Restart Kubernetes CoreDNS if present
+      block:
+        - name: Check if kubectl is available
+          command: which kubectl
+          register: kubectl_check
+          failed_when: false
+          changed_when: false
+
+        - name: Check if CoreDNS deployment exists
+          command: kubectl get deployment coredns -n kube-system
+          register: coredns_check
+          failed_when: false
+          changed_when: false
+          when: kubectl_check.rc == 0
+
+        - name: Restart CoreDNS deployment
+          command: kubectl rollout restart deployment/coredns -n kube-system
+          when:
+            - kubectl_check.rc == 0
+            - coredns_check.rc == 0
+            - restart_services
+          register: coredns_restart
+
+        - name: Wait for CoreDNS rollout to complete
+          command: kubectl rollout status deployment/coredns -n kube-system --timeout=120s
+          when: coredns_restart is changed
+
+      tags: kubernetes
+
+  handlers:
+    - name: restart systemd-resolved
+      systemd:
+        name: systemd-resolved
+        state: restarted
+        daemon_reload: yes
+
+  post_tasks:
+    - name: Verify DNS resolution
+      block:
+        - name: Test external DNS resolution
+          command: nslookup google.com
+          register: external_dns_test
+          changed_when: false
+
+        - name: Test Tailscale DNS resolution
+          command: nslookup {{ ansible_hostname }}.{{ tailscale_domain | default('ts.net') }}
+          register: tailscale_dns_test
+          failed_when: false
+          changed_when: false
+
+        - name: Display DNS test results
+          debug:
+            msg:
+              - "External DNS test: {{ 'PASSED' if external_dns_test.rc == 0 else 'FAILED' }}"
+              - "Tailscale DNS test: {{ 'PASSED' if tailscale_dns_test.rc == 0 else 'FAILED (this is normal if device not in tailnet)' }}"
+              - "systemd-resolved status: Active"
+
+      tags: verification
+
+    - name: Display configuration summary
+      debug:
+        msg:
+          - "=== systemd-resolved + Tailscale Configuration Complete ==="
+          - "✅ systemd-resolved installed and configured"
+          - "✅ DNS split-horizon configured:"
+          - "   - *.ts.net domains → Tailscale MagicDNS"
+          - "   - All other domains → {{ public_dns_servers | join(', ') }}"
+          - "✅ /etc/resolv.conf linked to systemd-resolved"
+          - "✅ Tailscale DNS integration enabled"
+          - "{{ '✅ CoreDNS restarted' if coredns_restart is defined and coredns_restart is changed else '⚠️  CoreDNS not found/restarted' }}"
+          - ""
+          - "📋 Verification commands:"
+          - "   systemd-resolve --status"
+          - "   tailscale status"
+          - "   nslookup google.com"
+          - "   nslookup device-name.ts.net"

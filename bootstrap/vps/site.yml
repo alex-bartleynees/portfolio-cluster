@@ -16,6 +16,12 @@
 - name: Install Tailscale
   import_playbook: playbooks/tailscale.yml
 
+- name: Update certs
+  import_playbook: playbooks/update-k8-certs.yml
+
+- name: Setup system resolved
+  import_playbook: playbooks/systemd-resolved.yml
+
 - name: Setup ksops
   import_playbook: playbooks/create-ksops-secret.yml
 

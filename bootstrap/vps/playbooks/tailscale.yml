@@ -32,7 +32,7 @@
       changed_when: false
 
     - name: Connect to Tailscale
-      command: "tailscale up --authkey={{ tailscale_authkey }} --ssh"
+      command: "tailscale up --authkey={{ tailscale_authkey }} --ssh --accept-dns=false"
       when:
         - tailscale_authkey != ""
         - "'Logged out' in tailscale_status.stdout or tailscale_status.rc != 0"
