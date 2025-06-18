@@ -31,7 +31,7 @@ ingress:
 
   services:
     - name: product-feedback-api
-      path: /
+      path: /api
       pathType: Prefix
       serviceName: product-feedback-api-svc
       servicePort: 5185
