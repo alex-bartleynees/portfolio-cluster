@@ -25,7 +25,7 @@ ingress:
     send: "60"
 
   hosts:
-    - domain: api.product-feedback.alexbartleynees.com
+    - domain: api-product-feedback.alexbartleynees.com
 
   namespace: product-feedback
 
