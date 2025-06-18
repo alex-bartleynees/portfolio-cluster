@@ -41,7 +41,7 @@ spec:
             persistence:
               enabled: true
               size: 10Gi
-              storageClass: openebs-hostpath
+              storageClassName: openebs-hostpath
               mountPath: /var/loki
             resources:
               requests:
