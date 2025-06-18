@@ -34,7 +34,7 @@ metadata:
   namespace: media
 spec:
   type: ExternalName
-  externalName: 100.98.211.116
+  externalName: media.tail8ca202.ts.net
   ports:
     - port: 5055
       protocol: TCP
