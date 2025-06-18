@@ -4,6 +4,7 @@ certificate:
     - domain: argo-cd.alexbartleynees.com
     - domain: media.alexbartleynees.com
     - domain: discover.alexbartleynees.com
+    - domain: api.product-feedback.alexbartleynees.com
   secretName: website-tls
   reflection:
     enabled: true
@@ -11,6 +12,7 @@ certificate:
     namespaces:
       - argocd
       - media
+      - product-feedback
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer

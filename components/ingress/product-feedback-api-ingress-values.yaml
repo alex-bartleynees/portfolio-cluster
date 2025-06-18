@@ -23,14 +23,14 @@ ingress:
     send: "60"
 
   hosts:
-    - domain: alexbartleynees.com
+    - domain: api.product-feedback.alexbartleynees.com
 
   namespace: product-feedback
 
   services:
     - name: product-feedback-api
-      path: /product-feedback-api(/|$)(.*)
-      pathType: ImplementationSpecific
+      path: /
+      pathType: Prefix
       serviceName: product-feedback-api-svc
       servicePort: 5185
 
