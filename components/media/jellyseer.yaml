@@ -33,22 +33,9 @@ metadata:
   name: media-jellyseer
   namespace: media
 spec:
-  type: ClusterIP
-  clusterIP: None
+  type: ExternalName
+  externalName: 100.98.211.116
   ports:
     - port: 5055
-      targetPort: 5055
       protocol: TCP
       name: http
----
-apiVersion: v1
-kind: Endpoints
-metadata:
-  name: media-jellyseer
-  namespace: media
-subsets:
-  - addresses:
-      - ip: 100.98.211.116
-    ports:
-      - port: 5055
-        name: http

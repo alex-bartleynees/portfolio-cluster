@@ -17,7 +17,7 @@
   import_playbook: playbooks/tailscale.yml
 
 - name: Update certs
-  import_playbook: playbooks/update-k8-certs.yml
+  import_playbook: playbooks/update-k8s-certs.yml
 
 - name: Setup system resolved
   import_playbook: playbooks/systemd-resolved.yml
