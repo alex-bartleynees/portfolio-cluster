@@ -44,6 +44,8 @@ spec:
       telemetry:
         logs:
           level: "debug"
+        metrics:
+          level: detailed
       pipelines:
         traces:
           receivers: [otlp]
