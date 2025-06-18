@@ -3,6 +3,6 @@ resources:
   - kube-prometheus-stack.yaml
   - kube-prometheus-stack-crds.yaml
   - opentelemetry-operator-app.yaml
-  - otel-collector.yaml
+  - otel-collector-app.yaml
   - loki.yaml
   - jaeger.yaml
