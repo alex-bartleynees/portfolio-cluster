@@ -3,6 +3,7 @@ resources:
   - ingress/nginx-ingress.yaml
   - certs/portfolio-site-cert.yaml
   - certs/cert-manager.yaml
+  - certs/portfolio-cert.yaml
   - database/database.yaml
   - database/backup.yaml
   - secrets

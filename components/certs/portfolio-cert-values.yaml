@@ -1,16 +1,14 @@
 certificate:
-  namespace: default
+  namespace: portfolio-site
   dnsNames:
-    - domain: argo-cd.alexbartleynees.com
-    - domain: media.alexbartleynees.com
-    - domain: discover.alexbartleynees.com
-  secretName: website-tls
+    - domain: alexbartleynees.com
+    - domain: www.alexbartleynees.com
+  secretName: portfolio-tls
   reflection:
-    enabled: true
+    enabled: false
     autoEnabled: true
     namespaces:
-      - argocd
-      - media
+      - portfolio-site
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
