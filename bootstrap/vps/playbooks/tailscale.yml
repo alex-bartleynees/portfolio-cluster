@@ -3,7 +3,7 @@
   become: yes
   vars:
     tailscale_authkey: "{{ vault_tailscale_authkey | default('') }}"
-  
+
   tasks:
     - name: Add Tailscale repository
       yum_repository:
@@ -32,8 +32,8 @@
       changed_when: false
 
     - name: Connect to Tailscale
-      command: "tailscale up --authkey={{ tailscale_authkey }} --accept-routes"
-      when: 
+      command: "tailscale up --authkey={{ tailscale_authkey }} --ssh"
+      when:
         - tailscale_authkey != ""
         - "'Logged out' in tailscale_status.stdout or tailscale_status.rc != 0"
       register: tailscale_connect
