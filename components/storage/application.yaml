@@ -8,7 +8,7 @@ spec:
   source:
     chart: openebs
     repoURL: https://openebs.github.io/openebs
-    targetRevision: 4.1.2
+    targetRevision: 4.3.0
     helm:
       values: |
         openebsNDM:
@@ -19,11 +19,18 @@ spec:
           replicated:
             mayastor:
               enabled: false
-        storageClass:
-          hostPath:
+
+        localpv-provisioner:
+          enabled: true
+          openebsNDM:
+            enabled: false
+          hostpathClass:
             enabled: true
+            name: "openebs-hostpath"
             isDefaultClass: true
-            volumeBindingMode: Immediate
+            reclaimPolicy: "Delete"
+            volumeBindingMode: "Immediate"  
+            basePath: "/var/openebs/local"
   destination:
     server: https://kubernetes.default.svc
     namespace: openebs
