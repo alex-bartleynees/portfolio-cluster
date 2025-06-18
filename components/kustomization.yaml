@@ -8,4 +8,3 @@ resources:
   - secrets
   - storage/application.yaml
   - metrics
-  - media
