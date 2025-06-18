@@ -38,4 +38,4 @@ ingress:
 
 tls:
   enabled: true
-  secretName: website-tls
+  secretName: portfolio-tls
