@@ -6,7 +6,7 @@ metadata:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: media-tailscale-ingress
+  name: media-jellyfin-ingress
   namespace: jellyfin
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
@@ -28,14 +28,14 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: media-tailscale
+                name: media-jellyfin
                 port:
                   number: 8096
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: media-tailscale
+  name: media-jellyfin
   namespace: jellyfin
 spec:
   type: ClusterIP
@@ -49,10 +49,10 @@ spec:
 apiVersion: discovery.k8s.io/v1
 kind: EndpointSlice
 metadata:
-  name: media-tailscale
+  name: media-jellyfin
   namespace: jellyfin
   labels:
-    kubernetes.io/service-name: media-tailscale
+    kubernetes.io/service-name: media-jellyfin
 addressType: IPv4
 ports:
   - name: http
