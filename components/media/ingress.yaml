@@ -14,7 +14,7 @@ spec:
   tls:
     - hosts:
         - media.alexbartleynees.com
-      secretName: website-tls
+      secretName: media-tls
   rules:
     - host: media.alexbartleynees.com
       http:

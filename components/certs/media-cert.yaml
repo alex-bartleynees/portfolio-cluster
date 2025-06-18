@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: media-cert
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: registry-1.docker.io/creativefree
+      targetRevision: 0.3.0
+      chart: cert-manager
+      path: ./
+      helm:
+        valueFiles:
+          - $values/components/certs/media-cert-values.yaml
+    - repoURL: "https://github.com/alex-bartleynees/portfolio-cluster.git"
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
