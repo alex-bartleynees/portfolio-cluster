@@ -9,13 +9,13 @@ metadata:
   name: media-jellyseer-ingress
   namespace: jellyseer
   annotations:
-    kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     # Basic Jellyfin support
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 spec:
+  ingressClassName: nginx
   tls:
     - hosts:
         - discover.alexbartleynees.com
