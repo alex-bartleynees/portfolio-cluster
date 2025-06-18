@@ -4,9 +4,26 @@ metadata:
   name: media-tailscale
   namespace: media
 spec:
-  type: ExternalName
-  externalName: media.tail8ca202.ts.net
+  type: ClusterIP
+  clusterIP: None
   ports:
     - port: 8096
+      targetPort: 8096
       protocol: TCP
       name: http
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: media-tailscale
+  namespace: media
+  labels:
+    kubernetes.io/service-name: media-tailscale
+addressType: IPv4
+ports:
+  - name: http
+    port: 8096
+    protocol: TCP
+endpoints:
+  - addresses:
+      - "100.98.211.116"
