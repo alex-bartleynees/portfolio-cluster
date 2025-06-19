@@ -21,7 +21,7 @@ spec:
         - jelly.alexbartleynees.com
       secretName: jelly-tls
   rules:
-    - host: media.alexbartleynees.com
+    - host: jelly.alexbartleynees.com
       http:
         paths:
           - path: /
