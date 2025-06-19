@@ -102,7 +102,7 @@ spec:
   tls:
     - hosts:
         - argo-cd.alexbartleynees.com
-      secretName: website-tls
+      secretName: argocd-tls
   rules:
     - host: argo-cd.alexbartleynees.com
       http:

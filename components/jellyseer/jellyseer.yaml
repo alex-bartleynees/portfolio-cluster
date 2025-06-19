@@ -19,7 +19,7 @@ spec:
   tls:
     - hosts:
         - discover.alexbartleynees.com
-      secretName: website-tls
+      secretName: jellyseer-tls
   rules:
     - host: discover.alexbartleynees.com
       http:

@@ -37,4 +37,4 @@ ingress:
 
 tls:
   enabled: true
-  secretName: website-tls
+  secretName: product-feedback-api-tls
