@@ -61,3 +61,4 @@ ports:
 endpoints:
   - addresses:
       - "100.98.211.116"
+    conditions: {}
