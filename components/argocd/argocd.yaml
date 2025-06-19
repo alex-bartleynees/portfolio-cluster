@@ -21,6 +21,45 @@ spec:
             enableOCI: true
           cm:
             kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
+            resource.exclusions: |
+              - apiGroups:
+                - ""
+                kinds:
+                - Endpoints
+                - Lease
+                - Event
+                - SelfSubjectReview
+                - TokenReview
+                - LocalSubjectAccessReview
+                - SelfSubjectAccessReview
+                - SelfSubjectRulesReview
+                - SubjectAccessReview
+                - CertificateSigningRequest
+              - apiGroups:
+                - wgpolicyk8s.io
+                kinds:
+                - PolicyReport
+                - ClusterPolicyReport
+              - apiGroups:
+                - cert-manager.io
+                kinds:
+                - CertificateRequest
+              - apiGroups:
+                - kyverno.io
+                kinds:
+                - EphemeralReport
+                - ClusterEphemeralReport
+                - AdmissionReport
+                - ClusterAdmissionReport
+                - BackgroundScanReport
+                - ClusterBackgroundScanReport
+                - UpdateRequest
+              - apiGroups:
+                - cilium.io
+                kinds:
+                - CiliumIdentity
+                - CiliumEndpoint
+                - CiliumEndpointSlice
         repoServer:
           env:
             - name: HELM_ENABLE_OIDC
