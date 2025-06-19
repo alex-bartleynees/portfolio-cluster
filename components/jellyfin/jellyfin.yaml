@@ -18,8 +18,8 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - media.alexbartleynees.com
-      secretName: media-tls
+        - jelly.alexbartleynees.com
+      secretName: jelly-tls
   rules:
     - host: media.alexbartleynees.com
       http:
