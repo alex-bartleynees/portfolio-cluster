@@ -50,7 +50,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: obsidian
-                key: COUCHDB_USER
+                  key: COUCHDB_USER
             - name: COUCHDB_PASSWORD
               valueFrom:
                 secretKeyRef:
