@@ -2,7 +2,6 @@ resources:
   - apps
   - jellyfin
   - jellyseer
-  - obsidian-livesync
   - ingress/nginx-ingress.yaml
   - certs/cert-manager.yaml
   - database/database.yaml
