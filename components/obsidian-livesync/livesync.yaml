@@ -56,24 +56,6 @@ spec:
                 secretKeyRef:
                   name: obsidian
                   key: COUCHDB_PASSWORD
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 5984
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            successThreshold: 1
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 5984
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 3
-            successThreshold: 1
-            failureThreshold: 3
           volumeMounts:
             - name: obsidiandata
               mountPath: "/opt/couchdb/data"
