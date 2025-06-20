@@ -33,11 +33,11 @@ spec:
           image: docker.io/oleduc/docker-obsidian-livesync-couchdb:master
           resources:
             requests:
-              memory: "2Gi"
-              cpu: "0.5"
+              memory: "512Mi"
+              cpu: "0.1"
             limits:
-              memory: "3Gi"
-              cpu: "1"
+              memory: "1Gi"
+              cpu: "0.5"
           ports:
             - containerPort: 5984
               name: tcpobsidian
