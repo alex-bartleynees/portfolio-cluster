@@ -1,3 +1,4 @@
 resources:
   - portfolio-site.yaml
   - product-feedback-api.yaml
+  - obsidian-livesync-app.yaml
