@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: obsidian-livesync
+  namespace: obsidian
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
+    targetRevision: HEAD
+    path: components/obsidian-livesync
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: obsidian
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

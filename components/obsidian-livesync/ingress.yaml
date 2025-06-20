@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: obsidian-ingress
+  namespace: obsidian
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Basic Jellyfin support
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - obsidian.alexbartleynees.com
+      secretName: obsidian-tls
+  rules:
+    - host: obsidian.alexbartleynees.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: obsidian-db
+                port:
+                  number: 5984
