@@ -43,9 +43,9 @@ spec:
               name: tcpobsidian
           env:
             - name: SERVER_URL
-            - value: "https://obsidian.alexbartleynees.com"
+              value: "https://obsidian.alexbartleynees.com"
             - name: COUCHDB_DATABASE
-            - value: obsidian
+              value: obsidian
             - name: COUCHDB_USER
               valueFrom:
                 secretKeyRef:
