@@ -62,6 +62,8 @@ spec:
           ruler:
             enabled: false
         deploymentMode: SingleBinary
+        singleBinary:
+          replicas: 1
         backend:
           replicas: 0
         read:
@@ -86,6 +88,10 @@ spec:
           replicas: 0
         bloomGateway:
           replicas: 0
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
         query_schedule:
           max_outstanding_requests_per_tenant: 2048
   destination:
