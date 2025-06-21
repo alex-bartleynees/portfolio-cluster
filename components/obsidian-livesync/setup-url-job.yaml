@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: obsidian-setup-url-generator
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: setup-url-generator
+          image: docker.io/oleduc/docker-obsidian-livesync-couchdb:master
+          command: ["deno", "-A", "/scripts/generate_setupuri.ts"]
+          env:
+            - name: hostname
+              value: "https://obsidian.alexbartleynees.com"
+            - name: database
+              value: "obsidian"
+            - name: username
+              valueFrom:
+                secretKeyRef:
+                  name: obsidian
+                  key: COUCHDB_USER
+            - name: password
+              valueFrom:
+                secretKeyRef:
+                  name: obsidian
+                  key: COUCHDB_PASSWORD
+            - name: passphrase
+              valueFrom:
+                secretKeyRef:
+                  name: obsidian
+                  key: PASSPHRASE
