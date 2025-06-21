@@ -2,30 +2,31 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: couchdb-init-users-table
-  namespace: obsidian-livesync
+  namespace: obsidian
 spec:
   template:
     spec:
       restartPolicy: OnFailure
       containers:
-      - name: couchdb-init
-        image: curlimages/curl:latest
-        command:
-        - /bin/sh
-        - -c
-        - |
-          echo "Creating _users table..."
-          curl -u "$COUCHDB_USER:$COUCHDB_PASSWORD" -X PUT http://obsidian-db:5984/_users
-          echo "Done."
-        env:
-        - name: COUCHDB_USER
-          valueFrom:
-            secretKeyRef:
-              name: obsidian
-              key: COUCHDB_USER
-        - name: COUCHDB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: obsidian
-              key: COUCHDB_PASSWORD
+        - name: couchdb-init
+          image: curlimages/curl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Creating _users table..."
+              curl -u "$COUCHDB_USER:$COUCHDB_PASSWORD" -X PUT http://obsidian-db:5984/_users
+              echo "Done."
+          env:
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: obsidian
+                  key: COUCHDB_USER
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: obsidian
+                  key: COUCHDB_PASSWORD
   backoffLimit: 3
+

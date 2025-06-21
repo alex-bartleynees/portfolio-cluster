@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: obsidian-setup-url-generator
+  namespace: obsidian
 spec:
   template:
     spec:
@@ -30,3 +31,4 @@ spec:
                 secretKeyRef:
                   name: obsidian
                   key: PASSPHRASE
+
