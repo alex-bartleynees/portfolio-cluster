@@ -39,6 +39,7 @@ metadata:
   namespace: jellyseer
 spec:
   type: ClusterIP
+  clusterIP: None
   ports:
     - port: 5055
       targetPort: 5055
