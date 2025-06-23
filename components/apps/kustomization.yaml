@@ -3,3 +3,5 @@ resources:
   - product-feedback-api.yaml
   - obsidian-livesync-app.yaml
   - immich-photo-app.yaml
+  - files-app.yaml
+  - office-app.yaml
