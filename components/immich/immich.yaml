@@ -26,7 +26,7 @@ spec:
               service:
                 name: immich-service
                 port:
-                  number: 2283
+                  number: 80
 ---
 apiVersion: v1
 kind: Service
@@ -37,8 +37,8 @@ spec:
   type: ClusterIP
   clusterIP: None
   ports:
-    - port: 2283
-      targetPort: 2283
+    - port: 80
+      targetPort: 80
       protocol: TCP
       name: http
 ---
@@ -52,7 +52,7 @@ metadata:
 addressType: IPv4
 ports:
   - name: http
-    port: 2283
+    port: 80
     protocol: TCP
 endpoints:
   - addresses:
