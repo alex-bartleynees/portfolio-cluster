@@ -1,4 +1,10 @@
-- name: Configure SELinux and Firewall
+- name: OVHcloud Security Hardening
+  import_playbook: playbooks/ovh-security.yml
+
+- name: Install Tailscale with SSH
+  import_playbook: playbooks/tailscale.yml
+
+- name: Configure SELinux and Secure Firewall
   import_playbook: playbooks/selinux-firewall.yml
 
 - name: Apply common configuration
@@ -12,9 +18,6 @@
 
 - name: Install Helm
   import_playbook: playbooks/helm.yml
-
-- name: Install Tailscale
-  import_playbook: playbooks/tailscale.yml
 
 - name: Update certs
   import_playbook: playbooks/update-k8s-certs.yml

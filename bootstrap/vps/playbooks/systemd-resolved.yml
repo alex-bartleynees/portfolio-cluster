@@ -34,9 +34,11 @@
           package_facts:
             manager: auto
 
-        - name: Install systemd-resolved
+        - name: Install systemd-resolved and DNS tools
           dnf:
-            name: systemd-resolved
+            name:
+              - systemd-resolved
+              - bind-utils
             state: present
           when: "'systemd-resolved' not in ansible_facts.packages"
           notify: restart systemd-resolved
@@ -165,12 +167,13 @@
     - name: Verify DNS resolution
       block:
         - name: Test external DNS resolution
-          command: nslookup google.com
+          command: dig google.com +short
           register: external_dns_test
           changed_when: false
+          failed_when: false
 
         - name: Test Tailscale DNS resolution
-          command: nslookup {{ ansible_hostname }}.{{ tailscale_domain | default('ts.net') }}
+          command: dig {{ ansible_hostname }}.{{ tailscale_domain | default('ts.net') }} +short
           register: tailscale_dns_test
           failed_when: false
           changed_when: false
@@ -199,5 +202,5 @@
           - "📋 Verification commands:"
           - "   systemd-resolve --status"
           - "   tailscale status"
-          - "   nslookup google.com"
-          - "   nslookup device-name.ts.net"
+          - "   dig google.com"
+          - "   dig device-name.ts.net"

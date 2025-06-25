@@ -7,9 +7,10 @@
       register: tailscale_status_json
       failed_when: false
 
-    - name: Parse Tailscale hostname
+    - name: Parse Tailscale hostname and IP
       set_fact:
         tailscale_hostname: "{{ (tailscale_status_json.stdout | from_json).Self.DNSName | regex_replace('\\.$', '') }}"
+        tailscale_ip: "{{ (tailscale_status_json.stdout | from_json).Self.TailscaleIPs[0] }}"
       when: tailscale_status_json.rc == 0
 
     - name: Display Tailscale hostname
@@ -68,14 +69,14 @@
 
     - name: Wait for API server to be ready
       uri:
-        url: "https://{{ tailscale_hostname }}:6443/healthz"
+        url: "https://{{ tailscale_ip }}:6443/healthz"
         validate_certs: no
         timeout: 30
       register: api_health
       until: api_health.status == 200
       retries: 10
       delay: 5
-      when: tailscale_hostname is defined
+      when: tailscale_ip is defined
 
     - name: Display success message
       debug:

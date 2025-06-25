@@ -1,0 +1,250 @@
+---
+- name: OVHcloud VPS Security Hardening
+  hosts: all
+  become: true
+  vars:
+    # Security settings
+    disable_standard_ssh: true
+    enable_fail2ban: false  # Not needed with Tailscale SSH
+    ssh_hardening: true
+    
+    # Allowed SSH users (if keeping standard SSH)
+    ssh_allowed_users: []
+    
+    # Network security
+    enable_syn_cookies: true
+    disable_ipv6: false
+
+  tasks:
+    - name: Update system packages
+      dnf:
+        name: '*'
+        state: latest
+
+    - name: Install EPEL repository
+      dnf:
+        name: epel-release
+        state: present
+
+    - name: Install security packages
+      dnf:
+        name:
+          - fail2ban
+          - dnf-automatic
+          - rkhunter
+        state: present
+
+    - name: Configure SSH hardening
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes
+      loop:
+        - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
+        - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+        - { regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+        - { regexp: '^#?MaxAuthTries', line: 'MaxAuthTries 3' }
+        - { regexp: '^#?ClientAliveInterval', line: 'ClientAliveInterval 300' }
+        - { regexp: '^#?ClientAliveCountMax', line: 'ClientAliveCountMax 2' }
+        - { regexp: '^#?X11Forwarding', line: 'X11Forwarding no' }
+        - { regexp: '^#?Protocol', line: 'Protocol 2' }
+      when: ssh_hardening and not disable_standard_ssh
+      notify: restart sshd
+
+    - name: Restrict SSH to specific users
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        line: "AllowUsers {{ ssh_allowed_users | join(' ') }}"
+        backup: yes
+      when: ssh_allowed_users | length > 0 and not disable_standard_ssh
+      notify: restart sshd
+
+    - name: Disable SSH daemon (using Tailscale SSH only)
+      systemd:
+        name: sshd
+        state: stopped
+        enabled: false
+      when: disable_standard_ssh
+
+    - name: Configure fail2ban for SSH (if keeping standard SSH)
+      copy:
+        content: |
+          [sshd]
+          enabled = true
+          port = ssh
+          filter = sshd
+          logpath = /var/log/secure
+          maxretry = 3
+          bantime = 3600
+          findtime = 600
+          
+          [sshd-ddos]
+          enabled = true
+          port = ssh
+          filter = sshd-ddos
+          logpath = /var/log/secure
+          maxretry = 2
+          bantime = 7200
+          findtime = 120
+        dest: /etc/fail2ban/jail.local
+        backup: yes
+      when: enable_fail2ban and not disable_standard_ssh
+      notify: restart fail2ban
+
+    - name: Enable and start fail2ban
+      systemd:
+        name: fail2ban
+        state: started
+        enabled: true
+      when: enable_fail2ban and not disable_standard_ssh
+
+    - name: Load bridge kernel module
+      modprobe:
+        name: br_netfilter
+        state: present
+
+    - name: Ensure bridge module loads on boot
+      lineinfile:
+        path: /etc/modules-load.d/br_netfilter.conf
+        line: br_netfilter
+        create: yes
+
+    - name: Configure basic kernel parameters for security
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        sysctl_file: /etc/sysctl.d/99-security.conf
+        reload: yes
+      loop:
+        # Network security
+        - { name: 'net.ipv4.conf.all.send_redirects', value: '0' }
+        - { name: 'net.ipv4.conf.default.send_redirects', value: '0' }
+        - { name: 'net.ipv4.conf.all.accept_redirects', value: '0' }
+        - { name: 'net.ipv4.conf.default.accept_redirects', value: '0' }
+        - { name: 'net.ipv4.conf.all.secure_redirects', value: '0' }
+        - { name: 'net.ipv4.conf.default.secure_redirects', value: '0' }
+        - { name: 'net.ipv4.ip_forward', value: '1' }  # Needed for Kubernetes
+        - { name: 'net.ipv4.conf.all.log_martians', value: '1' }
+        - { name: 'net.ipv4.icmp_echo_ignore_broadcasts', value: '1' }
+        - { name: 'net.ipv4.icmp_ignore_bogus_error_responses', value: '1' }
+        - { name: 'net.ipv4.tcp_syncookies', value: '1' }
+
+    - name: Configure bridge kernel parameters for Kubernetes
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        sysctl_file: /etc/sysctl.d/99-security.conf
+        reload: yes
+      loop:
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }  # Kubernetes
+        - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }  # Kubernetes
+      ignore_errors: yes
+
+    - name: Configure memory protection parameters
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        sysctl_file: /etc/sysctl.d/99-security.conf
+        reload: yes
+      loop:
+        - { name: 'kernel.dmesg_restrict', value: '1' }
+        - { name: 'kernel.kptr_restrict', value: '2' }
+        - { name: 'kernel.yama.ptrace_scope', value: '1' }
+      ignore_errors: yes
+
+    - name: Configure dnf-automatic
+      lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes
+      loop:
+        - { regexp: '^upgrade_type =', line: 'upgrade_type = security' }
+        - { regexp: '^apply_updates =', line: 'apply_updates = yes' }
+        - { regexp: '^emit_via =', line: 'emit_via = email' }
+
+    - name: Enable dnf-automatic timer
+      systemd:
+        name: dnf-automatic.timer
+        state: started
+        enabled: true
+
+    - name: Set secure file permissions
+      file:
+        path: "{{ item }}"
+        mode: '0600'
+      loop:
+        - /etc/ssh/sshd_config
+        - /etc/shadow
+        - /etc/gshadow
+      ignore_errors: true
+
+    - name: Remove unnecessary packages
+      package:
+        name:
+          - telnet
+          - rsh-server
+          - rsh
+          - ypbind
+          - ypserv
+          - tftp
+          - tftp-server
+          - talk
+          - talk-server
+        state: absent
+      ignore_errors: true
+
+    - name: Configure rkhunter
+      lineinfile:
+        path: /etc/rkhunter.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes
+      loop:
+        - { regexp: '^UPDATE_MIRRORS=', line: 'UPDATE_MIRRORS=1' }
+        - { regexp: '^MIRRORS_MODE=', line: 'MIRRORS_MODE=0' }
+        - { regexp: '^WEB_CMD=', line: 'WEB_CMD=""' }
+      ignore_errors: true
+
+    - name: Configure log rotation
+      copy:
+        content: |
+          /var/log/messages {
+              weekly
+              rotate 4
+              compress
+              delaycompress
+              missingok
+              notifempty
+              create 644 root root
+          }
+        dest: /etc/logrotate.d/syslog
+        backup: yes
+
+    - name: Display security status
+      debug:
+        msg: |
+          OVHcloud VPS Security Hardening Complete:
+          - SSH hardening: {{ ssh_hardening }}
+          - Standard SSH disabled: {{ disable_standard_ssh }}
+          - Fail2ban enabled: {{ enable_fail2ban }}
+          - Kernel security parameters applied
+          - Automatic updates configured
+          - Unnecessary services removed
+          
+          Next steps:
+          1. Verify Tailscale SSH access works
+          2. Test UFW firewall rules
+          3. Monitor logs for any issues
+
+  handlers:
+    - name: restart sshd
+      systemd:
+        name: sshd
+        state: restarted
+
+    - name: restart fail2ban
+      systemd:
+        name: fail2ban
+        state: restarted

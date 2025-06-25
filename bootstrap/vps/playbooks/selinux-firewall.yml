@@ -1,10 +1,18 @@
 ---
-- name: Configure SELinux and Firewall for Single Node Kubernetes
+- name: Configure SELinux and Secure Firewall for OVHcloud VPS with Tailscale
   hosts: k8s_master
   become: true
   vars:
-    k8s_ports_tcp:
+    # Kubernetes ports accessible via Tailscale only
+    k8s_tailscale_ports:
       - 6443 # Kubernetes API server
+      - 8080 # ArgoCD UI (port-forward)
+      - 3000 # Grafana (port-forward)
+      - 9090 # Prometheus (port-forward)
+      - 16686 # Jaeger (port-forward)
+
+    # Internal Kubernetes ports (localhost/pod network only)
+    k8s_internal_ports:
       - 2379 # etcd server client API
       - 2380 # etcd server client API
       - 10250 # Kubelet API
@@ -13,24 +21,26 @@
       - 10257 # kube-controller-manager webhook
       - 10259 # kube-scheduler webhook
       - 179 # Calico BGP
-      - 30000-32767 # NodePort Services range
-      - 80 # HTTP
-      - 443 # HTTPS
-      - 30080 # NGINX Ingress HTTP NodePort
-      - 30443 # NGINX Ingress HTTPS NodePort
-      - 9090 # Prometheus
-      - 9093 # Alertmanager
-      - 9100 # Node Exporter
-      - 3000 # Grafana
-      - 8080
-      - 9153
+      - 9153 # CoreDNS
       - 2381
       - 10249
       - 4317 # Otel Collector
       - 4318 # Otel Collector
       - 3100 # Loki
       - 9095 # GRPC port
-    configure_firewall: true # Set to true if you want to use firewalld
+      - 9093 # Alertmanager
+      - 9100 # Node Exporter
+
+    # External services (if needed)
+    enable_nodeport_external: false
+    enable_ingress_external: true
+
+    # Tailscale subnet
+    tailscale_subnet: "100.64.0.0/10"
+
+    # Security settings
+    configure_firewall: true
+    block_external_ssh: true
   tasks:
     - name: Set SELinux to permissive
       selinux:
@@ -45,13 +55,6 @@
         replace: "SELINUX=permissive"
         backup: yes
 
-    - name: Ensure firewalld is stopped and disabled
-      systemd:
-        name: firewalld
-        state: stopped
-        enabled: false
-      when: not configure_firewall
-
     - name: Install firewalld
       dnf:
         name: firewalld
@@ -65,31 +68,126 @@
         enabled: true
       when: configure_firewall
 
-    - name: Configure TCP ports for Kubernetes
+    - name: Create custom firewalld zone for Tailscale
+      command: firewall-cmd --permanent --new-zone=tailscale
+      register: zone_creation
+      failed_when: zone_creation.rc != 0 and "NAME_CONFLICT" not in zone_creation.stderr
+      changed_when: zone_creation.rc == 0
+      when: configure_firewall
+
+    - name: Reload firewall after zone creation
+      command: firewall-cmd --reload
+      when: configure_firewall and zone_creation is defined
+
+    - name: Block SSH port externally (Tailscale SSH only)
+      firewalld:
+        port: "22/tcp"
+        permanent: yes
+        state: disabled
+        immediate: yes
+        zone: public
+      when: configure_firewall and block_external_ssh
+
+    - name: Allow Tailscale interface
+      firewalld:
+        interface: tailscale0
+        zone: trusted
+        permanent: yes
+        state: enabled
+        immediate: yes
+      when: configure_firewall
+      ignore_errors: true # Interface may not exist yet
+
+    - name: Allow Tailscale UDP port
+      firewalld:
+        port: "41641/udp"
+        permanent: yes
+        state: enabled
+        immediate: yes
+        zone: public
+      when: configure_firewall
+
+    - name: Allow Kubernetes ports in Tailscale zone
       firewalld:
         port: "{{ item }}/tcp"
         permanent: yes
         state: enabled
         immediate: yes
-      with_items: "{{ k8s_ports_tcp }}"
+        zone: tailscale
+      with_items: "{{ k8s_tailscale_ports }}"
       when: configure_firewall
 
-    - name: Configure UDP port for Flannel VXLAN
+    - name: Allow Kubernetes internal communication
+      firewalld:
+        source: "{{ item }}"
+        zone: trusted
+        permanent: yes
+        state: enabled
+        immediate: yes
+      with_items:
+        - "10.244.0.0/16" # Pod network
+        - "10.96.0.0/12" # Service network
+        - "127.0.0.1/32" # Localhost
+      when: configure_firewall
+
+    - name: Allow Flannel VXLAN
       firewalld:
         port: "4789/udp"
         permanent: yes
         state: enabled
         immediate: yes
+        zone: trusted
       when: configure_firewall
 
-    - name: Allow Flannel Pod network source
+    - name: Allow Calico BGP between nodes
       firewalld:
-        source: "10.244.0.0/16"
+        port: "179/tcp"
+        permanent: yes
+        state: enabled
+        immediate: yes
+        zone: trusted
+      when: configure_firewall
+
+    - name: Allow NodePort range externally (optional)
+      firewalld:
+        port: "30000-32767/tcp"
+        permanent: yes
+        state: enabled
+        immediate: yes
         zone: public
+      when: configure_firewall and enable_nodeport_external
+
+    - name: Allow HTTP/HTTPS for ingress (optional)
+      firewalld:
+        port: "{{ item }}/tcp"
+        permanent: yes
+        state: enabled
+        immediate: yes
+        zone: public
+      with_items:
+        - "80"
+        - "443"
+      when: configure_firewall and enable_ingress_external
+
+    - name: Configure Tailscale zone
+      firewalld:
+        zone: tailscale
+        source: "{{ tailscale_subnet }}"
         permanent: yes
         state: enabled
         immediate: yes
       when: configure_firewall
+
+    - name: Remove old Kubernetes rich rules from public zone
+      firewalld:
+        rich_rule: "rule family=ipv4 source address={{ tailscale_subnet }} port port={{ item }} protocol=tcp accept"
+        permanent: yes
+        state: disabled
+        immediate: yes
+        zone: public
+      with_items: "{{ k8s_tailscale_ports }}"
+      when: configure_firewall
+      ignore_errors: yes
 
     - name: Reload firewall
       command: firewall-cmd --reload
@@ -97,7 +195,7 @@
       when: configure_firewall
 
     - name: Show current firewall configuration
-      command: firewall-cmd --list-all
+      command: firewall-cmd --list-all-zones
       register: firewall_rules
       changed_when: false
       when: configure_firewall
@@ -105,3 +203,14 @@
     - name: Display firewall rules
       debug:
         var: firewall_rules.stdout_lines
+
+    - name: Display security status
+      debug:
+        msg: |
+          Firewall Security Configuration Complete:
+          - External SSH: {{ 'BLOCKED' if block_external_ssh else 'ALLOWED' }}
+          - Tailscale SSH: ENABLED
+          - Kubernetes ports: Tailscale-only access
+          - Pod/Service networks: Internal communication allowed
+          - NodePort external: {{ 'ENABLED' if enable_nodeport_external else 'DISABLED' }}
+          - Ingress external: {{ 'ENABLED' if enable_ingress_external else 'DISABLED' }}

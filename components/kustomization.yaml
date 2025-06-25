@@ -4,6 +4,7 @@ resources:
   - jellyseer
   - ingress/nginx-ingress.yaml
   - certs/cert-manager.yaml
+  - certs/cluster-issuer.yaml
   - database/database.yaml
   - database/backup.yaml
   - secrets

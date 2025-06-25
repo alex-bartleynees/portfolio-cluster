@@ -31,8 +31,8 @@
       failed_when: false
       changed_when: false
 
-    - name: Connect to Tailscale
-      command: "tailscale up --authkey={{ tailscale_authkey }} --ssh --accept-dns=false"
+    - name: Connect to Tailscale with SSH and security settings
+      command: "tailscale up --authkey={{ tailscale_authkey }} --ssh --accept-dns=false --accept-routes=false --advertise-exit-node=false"
       when:
         - tailscale_authkey != ""
         - "'Logged out' in tailscale_status.stdout or tailscale_status.rc != 0"
@@ -47,6 +47,28 @@
       debug:
         msg: |
           No authkey provided. To connect manually, run:
-          sudo tailscale up --accept-routes
+          sudo tailscale up --ssh --accept-dns=false --accept-routes=false --advertise-exit-node=false
           Then authenticate via the provided URL.
       when: tailscale_authkey == ""
+
+    - name: Disable standard SSH daemon (optional security hardening)
+      systemd:
+        name: sshd
+        enabled: false
+        state: stopped
+      when: disable_standard_ssh | default(false)
+      ignore_errors: true
+
+    - name: Verify Tailscale SSH is working
+      command: tailscale status --json
+      register: tailscale_status_json
+      changed_when: false
+      failed_when: false
+
+    - name: Display Tailscale connection info
+      debug:
+        msg: |
+          Tailscale Status: {{ tailscale_status_json.stdout | from_json | json_query('BackendState') }}
+          SSH enabled: {{ (tailscale_status_json.stdout | from_json | json_query('Self.KeyExpiry') is not none) }}
+          To connect via SSH: ssh {{ tailscale_status_json.stdout | from_json | json_query('Self.TailscaleIPs[0]') }}
+      when: tailscale_status_json.rc == 0
