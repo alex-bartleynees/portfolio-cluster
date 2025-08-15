@@ -36,3 +36,6 @@
 
 - name: Install Root App
   import_playbook: playbooks/install-root-app.yml
+
+- name: Install cert-manager ClusterIssuer
+  import_playbook: playbooks/cert-manager-cluster-issuer.yml
