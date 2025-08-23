@@ -60,5 +60,5 @@ ports:
     protocol: TCP
 endpoints:
   - addresses:
-      - "100.98.211.116"
+      - "100.92.229.107"
     conditions: {}
