@@ -46,8 +46,7 @@ spec:
             limits:
               memory: 512Mi
               cpu: 500m
-          livenessProbe:
-            enabled: true
+          customLivenessProbe:
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -58,8 +57,7 @@ spec:
                 - sh
                 - -c
                 - redis-cli --tls --insecure -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
-          readinessProbe:
-            enabled: true
+          customReadinessProbe:
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 5
@@ -83,8 +81,7 @@ spec:
             limits:
               memory: 512Mi
               cpu: 500m
-          livenessProbe:
-            enabled: true
+          customLivenessProbe:
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -95,8 +92,7 @@ spec:
                 - sh
                 - -c
                 - redis-cli --tls --insecure -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
-          readinessProbe:
-            enabled: true
+          customReadinessProbe:
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 5
