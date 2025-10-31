@@ -64,6 +64,8 @@ spec:
         deploymentMode: SingleBinary
         singleBinary:
           replicas: 1
+          affinity: {}
+          podAntiAffinity: {}
         backend:
           replicas: 0
         read:
