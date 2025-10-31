@@ -31,6 +31,8 @@ spec:
             proxy-read-timeout: "120"
             proxy-send-timeout: "120"
           allowSnippetAnnotations: true
+          extraArgs:
+            enable-ssl-passthrough: "true"
   destination:
     server: https://kubernetes.default.svc
     namespace: ingress-nginx
