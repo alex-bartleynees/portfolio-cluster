@@ -5,4 +5,5 @@ resources:
   - opentelemetry-operator-app.yaml
   - otel-collector-app.yaml
   - loki.yaml
+  - jaeger-pvc.yaml
   - jaeger.yaml
