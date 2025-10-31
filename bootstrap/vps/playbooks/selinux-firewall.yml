@@ -169,6 +169,15 @@
         - "443"
       when: configure_firewall and enable_ingress_external
 
+    - name: Allow Redis TCP passthrough port
+      firewalld:
+        port: "6379/tcp"
+        permanent: yes
+        state: enabled
+        immediate: yes
+        zone: public
+      when: configure_firewall and enable_ingress_external
+
     - name: Configure Tailscale zone
       firewalld:
         zone: tailscale
