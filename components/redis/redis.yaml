@@ -20,12 +20,6 @@ spec:
           repository: bitnamisecure/redis
           tag: latest
 
-        metrics:
-          image:
-            registry: docker.io
-            repository: bitnamisecure/redis-exporter
-            tag: latest
-
         auth:
           enabled: true
           existingSecret: redis-auth
@@ -67,6 +61,10 @@ spec:
 
         metrics:
           enabled: true
+          image:
+            registry: docker.io
+            repository: bitnamisecure/redis-exporter
+            tag: latest
           serviceMonitor:
             enabled: true
             namespace: monitoring
