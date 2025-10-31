@@ -72,7 +72,7 @@ spec:
                 - redis-cli --tls --insecure -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
 
         replica:
-          replicaCount: 1
+          replicaCount: 0
           persistence:
             enabled: true
             size: 8Gi
