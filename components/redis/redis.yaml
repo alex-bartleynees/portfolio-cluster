@@ -57,7 +57,7 @@ spec:
               command:
                 - sh
                 - -c
-                - redis-cli --tls --cert /opt/bitnami/redis/certs/tls.crt --key /opt/bitnami/redis/certs/tls.key --cacert /opt/bitnami/redis/certs/tls.crt -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
+                - redis-cli --tls --insecure -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
           readinessProbe:
             enabled: true
             initialDelaySeconds: 10
@@ -69,7 +69,7 @@ spec:
               command:
                 - sh
                 - -c
-                - redis-cli --tls --cert /opt/bitnami/redis/certs/tls.crt --key /opt/bitnami/redis/certs/tls.key --cacert /opt/bitnami/redis/certs/tls.crt -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
+                - redis-cli --tls --insecure -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
 
         replica:
           replicaCount: 1
@@ -94,7 +94,7 @@ spec:
               command:
                 - sh
                 - -c
-                - redis-cli --tls --cert /opt/bitnami/redis/certs/tls.crt --key /opt/bitnami/redis/certs/tls.key --cacert /opt/bitnami/redis/certs/tls.crt -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
+                - redis-cli --tls --insecure -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
           readinessProbe:
             enabled: true
             initialDelaySeconds: 10
@@ -106,7 +106,7 @@ spec:
               command:
                 - sh
                 - -c
-                - redis-cli --tls --cert /opt/bitnami/redis/certs/tls.crt --key /opt/bitnami/redis/certs/tls.key --cacert /opt/bitnami/redis/certs/tls.crt -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
+                - redis-cli --tls --insecure -a $(cat $REDIS_PASSWORD_FILE) ping | grep PONG
 
         metrics:
           enabled: true
