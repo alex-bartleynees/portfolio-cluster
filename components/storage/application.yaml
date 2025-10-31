@@ -20,6 +20,12 @@ spec:
             mayastor:
               enabled: false
 
+        # Disable observability components (Loki)
+        observability:
+          enabled: false
+        loki:
+          enabled: false
+
         localpv-provisioner:
           enabled: true
           openebsNDM:
