@@ -31,6 +31,21 @@ spec:
 
               app.use(express.json());
 
+              // API Key authentication middleware
+              const API_KEY = process.env.API_KEY;
+              app.use((req, res, next) => {
+                // Skip auth for health check
+                if (req.path === '/health') {
+                  return next();
+                }
+
+                const authHeader = req.headers['authorization'];
+                if (!authHeader || authHeader !== `Bearer ${API_KEY}`) {
+                  return res.status(401).json({ error: 'Unauthorized' });
+                }
+                next();
+              });
+
               // Persistent Redis connection
               const redis = new Redis({
                 host: process.env.REDIS_HOST,
@@ -145,6 +160,11 @@ spec:
             - name: REDIS_TLS
               value: "true"
             - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-auth
+                  key: REDIS_PASSWORD
+            - name: API_KEY
               valueFrom:
                 secretKeyRef:
                   name: redis-auth
