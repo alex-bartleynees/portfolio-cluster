@@ -23,6 +23,7 @@ spec:
             - sh
             - -c
             - |
+              mkdir -p /app
               cat > /app/server.js << 'EOF'
               const express = require('express');
               const Redis = require('ioredis');
