@@ -14,9 +14,10 @@ spec:
     helm:
       values: |
         controller:
-          hostNetwork: true
+          hostNetwork: false
           service:
-            type: ""
+            type: LoadBalancer
+            loadBalancerIP: 51.161.130.194
           kind: DaemonSet
           resources:
             requests:

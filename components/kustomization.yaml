@@ -2,6 +2,8 @@ resources:
   - apps
   - jellyfin
   - jellyseer
+  - metallb/metallb.yaml
+  - metallb/ipaddresspool.yaml
   - ingress/nginx-ingress.yaml
   - certs/cert-manager.yaml
   - certs/cluster-issuer.yaml
