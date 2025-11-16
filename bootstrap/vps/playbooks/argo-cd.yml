@@ -5,7 +5,7 @@
   vars:
     kube_config_dir: "/home/{{ ansible_user }}/.kube"
     argocd_hostname: "argo-cd.alexbartleynees.com"
-    cluster_issuer: "letsencrypt-prod"
+    cluster_issuer: "letsencrypt"
 
   tasks:
     - name: Add Argo CD helm repository

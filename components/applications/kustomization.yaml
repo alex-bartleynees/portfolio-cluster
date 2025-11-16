@@ -22,8 +22,4 @@ resources:
   - seafiles.yaml
 
   # Supporting services
-  - ../redis-proxy
   - reflector.yaml
-
-  # Secrets
-  - ../secrets

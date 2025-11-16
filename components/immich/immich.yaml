@@ -9,7 +9,7 @@ metadata:
   name: immich-ingress
   namespace: photos
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: "letsencrypt
 spec:
   ingressClassName: nginx
   tls:
