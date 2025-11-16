@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Portfolio applications
+  - portfolio-site.yaml
+  - product-feedback-api.yaml
+
+  # Database and cache
+  - database.yaml
+  - backup.yaml
+  - redis.yaml
+
+  # Media services
+  - jellyfin.yaml
+  - jellyseer.yaml
+  - immich-photos.yaml
+
+  # Productivity
+  - obsidian-livesync.yaml
+  - office.yaml
+  - seafiles.yaml
+
+  # Supporting services
+  - ../redis-proxy
+  - reflector.yaml
+
+  # Secrets
+  - ../secrets

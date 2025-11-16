@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Ingress controller
+  - nginx-ingress.yaml
+
+  # Observability stack
+  - kube-prometheus-stack-crds.yaml
+  - kube-prometheus-stack.yaml
+  - loki.yaml
+  - jaeger.yaml
+  - opentelemetry-operator.yaml
+  - otel-collector.yaml
+
+  # Metrics
+  - metrics-server.yaml
+
+  # Storage
+  - openebs.yaml

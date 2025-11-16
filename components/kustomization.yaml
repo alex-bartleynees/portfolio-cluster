@@ -1,16 +1,8 @@
 resources:
-  - apps
+  # Infrastructure-specific resources (depend on infrastructure layer CRDs)
+  - metallb/ipaddresspool.yaml
+  - certs/cluster-issuer.yaml
+
+  # Media directories (basic k8s resources)
   - jellyfin
   - jellyseer
-  # MetalLB and cert-manager Applications are in infrastructure app
-  - metallb/ipaddresspool.yaml
-  - ingress/nginx-ingress.yaml
-  # cert-manager Application is in infrastructure app
-  - certs/cluster-issuer.yaml
-  - database/database.yaml
-  - database/backup.yaml
-  - redis
-  - redis-proxy
-  - secrets
-  - storage/application.yaml
-  - metrics
