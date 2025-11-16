@@ -1,0 +1,84 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base components
+resources:
+  - ../../components
+
+# Vagrant-specific patches
+patches:
+  # MetalLB IP address pool for local network
+  - path: metallb-ipaddresspool-patch.yaml
+    target:
+      kind: IPAddressPool
+      name: first-pool
+
+  # Self-signed certificates instead of Let's Encrypt
+  - path: selfsigned-issuer.yaml
+    target:
+      kind: ClusterIssuer
+
+  # Local domain names using nip.io
+  - path: ingress-patches.yaml
+    target:
+      kind: Ingress
+
+  # Reduced storage for Vagrant VM constraints
+  - path: storage-patches.yaml
+    target:
+      kind: PersistentVolumeClaim
+
+  # Reduced resource limits for Vagrant VM
+  - path: resource-patches.yaml
+    target:
+      kind: Deployment
+
+  - path: resource-patches.yaml
+    target:
+      kind: StatefulSet
+
+# Disable resource-intensive components for Vagrant testing
+# Uncomment these to exclude non-essential services
+# patchesStrategicMerge:
+#   - |-
+#     apiVersion: argoproj.io/v1alpha1
+#     kind: Application
+#     metadata:
+#       name: jellyfin
+#       namespace: argocd
+#     $patch: delete
+#   - |-
+#     apiVersion: argoproj.io/v1alpha1
+#     kind: Application
+#     metadata:
+#       name: jellyseer
+#       namespace: argocd
+#     $patch: delete
+#   - |-
+#     apiVersion: argoproj.io/v1alpha1
+#     kind: Application
+#     metadata:
+#       name: immich
+#       namespace: argocd
+#     $patch: delete
+#   - |-
+#     apiVersion: argoproj.io/v1alpha1
+#     kind: Application
+#     metadata:
+#       name: obsidian-livesync
+#       namespace: argocd
+#     $patch: delete
+#   - |-
+#     apiVersion: argoproj.io/v1alpha1
+#     kind: Application
+#     metadata:
+#       name: seafiles
+#       namespace: argocd
+#     $patch: delete
+#   - |-
+#     apiVersion: argoproj.io/v1alpha1
+#     kind: Application
+#     metadata:
+#       name: office
+#       namespace: argocd
+#     $patch: delete

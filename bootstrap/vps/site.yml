@@ -4,6 +4,9 @@
 - name: Install Tailscale with SSH
   import_playbook: playbooks/tailscale.yml
 
+- name: Setup system resolved
+  import_playbook: playbooks/systemd-resolved.yml
+
 - name: Configure SELinux and Secure Firewall
   import_playbook: playbooks/selinux-firewall.yml
 
@@ -21,9 +24,6 @@
 
 - name: Update certs
   import_playbook: playbooks/update-k8s-certs.yml
-
-- name: Setup system resolved
-  import_playbook: playbooks/systemd-resolved.yml
 
 - name: Setup ksops
   import_playbook: playbooks/create-ksops-secret.yml

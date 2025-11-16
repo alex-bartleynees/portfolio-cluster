@@ -6,6 +6,8 @@
     kube_config_dir: "/home/{{ ansible_user }}/.kube"
     release_name: "root-app"
     namespace: "argocd"
+    # Use overlays/vagrant for local testing, components for production
+    root_app_path: "overlays/vagrant"
 
   tasks:
     - name: Install root app chart
@@ -13,6 +15,7 @@
         helm upgrade --install {{ release_name }}
         oci://registry-1.docker.io/{{ docker_username }}/root-app
         --namespace {{ namespace }}
+        --set spec.source.path={{ root_app_path }}
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"
       register: helm_install

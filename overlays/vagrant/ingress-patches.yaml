@@ -1,0 +1,113 @@
+# Portfolio Site Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portfolio-site
+  namespace: portfolio
+spec:
+  rules:
+    - host: portfolio.192.168.56.10.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: portfolio-site
+                port:
+                  number: 443
+---
+# Product Feedback API Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: product-feedback-api
+  namespace: product-feedback
+spec:
+  rules:
+    - host: api.192.168.56.10.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: product-feedback-api
+                port:
+                  number: 443
+---
+# Product Feedback App Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: product-feedback-app
+  namespace: product-feedback
+spec:
+  rules:
+    - host: app.192.168.56.10.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: product-feedback-app
+                port:
+                  number: 443
+---
+# ArgoCD Server Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  rules:
+    - host: argocd.192.168.56.10.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                number: 443
+---
+# Grafana Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kube-prometheus-stack-grafana
+  namespace: monitoring
+spec:
+  rules:
+    - host: grafana.192.168.56.10.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-grafana
+                port:
+                  number: 443
+---
+# Redis Proxy Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: redis-proxy
+  namespace: redis
+spec:
+  rules:
+    - host: redis-api.192.168.56.10.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: redis-proxy
+                port:
+                  number: 3000

@@ -5,7 +5,7 @@ spec:
   source:
     repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
     targetRevision: HEAD
-    path: components
+    path: overlays/vagrant
   syncPolicy:
     automated:
       prune: true
@@ -15,4 +15,3 @@ spec:
       kind: PersistentVolumeClaim
       jsonPointers:
         - /spec/volumeName
-

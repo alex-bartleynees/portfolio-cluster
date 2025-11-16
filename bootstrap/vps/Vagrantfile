@@ -19,6 +19,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     k8s.vm.provider "virtualbox" do |vb|
       vb.memory = 4096
       vb.cpus = 4
+      # Use GUI mode to work around NixOS VBoxManage setuid wrapper issue
+      # This actually uses VBoxHeadless in the background
+      vb.gui = false
+      # Enable VirtualBox DNS proxy to handle host's Tailscale DNS
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
     end
 
     k8s.vm.provision "ansible" do |ansible|

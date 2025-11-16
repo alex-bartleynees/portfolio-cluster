@@ -4,21 +4,45 @@
   become: false
   vars:
     kube_config_dir: "/home/{{ ansible_user }}/.kube"
+    # Use staging for testing, production for real deployments
+    use_letsencrypt_staging: true
 
   tasks:
-    - name: Wait for cert-manager CRDs to be available
-      kubernetes.core.k8s_info:
-        api_version: apiextensions.k8s.io/v1
-        kind: CustomResourceDefinition
-        name: clusterissuers.cert-manager.io
-      register: crd_check
-      until: crd_check.resources | length > 0
-      retries: 30
+    - name: Wait for cert-manager application to be created by ArgoCD
+      command: kubectl get application cert-manager -n argocd
+      register: app_check
+      until: app_check.rc == 0
+      retries: 60
       delay: 10
+      failed_when: false
+      changed_when: false
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"
 
-    - name: Create letsencrypt-prod ClusterIssuer
+    - name: Wait for cert-manager application to be synced
+      command: kubectl get application cert-manager -n argocd -o jsonpath='{.status.sync.status}'
+      register: app_sync
+      until: app_sync.stdout == "Synced"
+      retries: 60
+      delay: 10
+      failed_when: false
+      changed_when: false
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+      when: app_check.rc == 0
+
+    - name: Wait for cert-manager CRDs to be available
+      command: kubectl get crd clusterissuers.cert-manager.io
+      register: crd_check
+      until: crd_check.rc == 0
+      retries: 30
+      delay: 10
+      failed_when: false
+      changed_when: false
+      environment:
+        KUBECONFIG: "{{ kube_config_dir }}/config"
+
+    - name: Create letsencrypt ClusterIssuer
       kubernetes.core.k8s:
         state: present
         definition:
@@ -28,29 +52,29 @@
             name: letsencrypt-prod
           spec:
             acme:
-              server: https://acme-v02.api.letsencrypt.org/directory
+              server: "{{ 'https://acme-staging-v02.api.letsencrypt.org/directory' if use_letsencrypt_staging else 'https://acme-v02.api.letsencrypt.org/directory' }}"
               email: alex@alexbartleynees.com
               privateKeySecretRef:
-                name: letsencrypt-prod
+                name: "{{ 'letsencrypt-staging' if use_letsencrypt_staging else 'letsencrypt-prod' }}"
               solvers:
-              - http01:
-                  ingress:
-                    class: nginx
+                - http01:
+                    ingress:
+                      class: nginx
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"
 
     - name: Verify ClusterIssuer is ready
-      kubernetes.core.k8s_info:
-        api_version: cert-manager.io/v1
-        kind: ClusterIssuer
-        name: letsencrypt-prod
+      command: kubectl get clusterissuer letsencrypt-prod -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
       register: cluster_issuer
-      until: cluster_issuer.resources[0].status.conditions | selectattr('type', 'equalto', 'Ready') | selectattr('status', 'equalto', 'True') | list | length > 0
+      until: cluster_issuer.stdout == "True"
       retries: 10
       delay: 30
+      failed_when: false
+      changed_when: false
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"
 
     - name: Display ClusterIssuer status
       debug:
         msg: "ClusterIssuer letsencrypt-prod is ready"
+
