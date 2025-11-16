@@ -1,8 +1,8 @@
 resources:
-  # Infrastructure-specific resources (depend on infrastructure layer CRDs)
-  - metallb/ipaddresspool.yaml
-  - certs/cluster-issuer.yaml
-
-  # Media directories (basic k8s resources)
   - jellyfin
   - jellyseer
+  - certs/cluster-issuer.yaml
+  - redis
+  - redis-proxy
+  - secrets
+  - metrics

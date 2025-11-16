@@ -6,7 +6,7 @@ metadata:
 spec:
   secretName: redis-tls
   issuerRef:
-    name: letsencrypt-prod
+    name: letsencrypt
     kind: ClusterIssuer
   dnsNames:
     - redis.alexbartleynees.com

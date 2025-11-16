@@ -14,53 +14,7 @@ patches:
       name: first-pool
 
   # Let's Encrypt staging for testing
-  - path: selfsigned-issuer.yaml
+  - path: letsencrypt-staging.yaml
     target:
       kind: ClusterIssuer
-      name: letsencrypt-prod
-
-# Disable resource-intensive components for Vagrant testing
-# Uncomment these to exclude non-essential services
-# patchesStrategicMerge:
-#   - |-
-#     apiVersion: argoproj.io/v1alpha1
-#     kind: Application
-#     metadata:
-#       name: jellyfin
-#       namespace: argocd
-#     $patch: delete
-#   - |-
-#     apiVersion: argoproj.io/v1alpha1
-#     kind: Application
-#     metadata:
-#       name: jellyseer
-#       namespace: argocd
-#     $patch: delete
-#   - |-
-#     apiVersion: argoproj.io/v1alpha1
-#     kind: Application
-#     metadata:
-#       name: immich
-#       namespace: argocd
-#     $patch: delete
-#   - |-
-#     apiVersion: argoproj.io/v1alpha1
-#     kind: Application
-#     metadata:
-#       name: obsidian-livesync
-#       namespace: argocd
-#     $patch: delete
-#   - |-
-#     apiVersion: argoproj.io/v1alpha1
-#     kind: Application
-#     metadata:
-#       name: seafiles
-#       namespace: argocd
-#     $patch: delete
-#   - |-
-#     apiVersion: argoproj.io/v1alpha1
-#     kind: Application
-#     metadata:
-#       name: office
-#       namespace: argocd
-#     $patch: delete
+      name: letsencrypt
