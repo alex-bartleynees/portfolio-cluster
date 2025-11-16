@@ -3,5 +3,5 @@ kind: Kustomization
 
 resources:
   # CRD providers must be installed first
-  - ../certs/cert-manager.yaml
-  - ../metallb/metallb.yaml
+  - cert-manager.yaml
+  - metallb.yaml
