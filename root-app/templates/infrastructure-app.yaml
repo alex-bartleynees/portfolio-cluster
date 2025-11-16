@@ -1,16 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: portfolio-cluster
+  name: infrastructure
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-wave: "-10"
 spec:
   project: default
   source:
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}
-    path: {{ .Values.spec.source.path }}
+    path: components/infrastructure
   destination:
     server: {{ .Values.spec.destination.server }}
     namespace: {{ .Values.spec.destination.namespace }}
@@ -18,6 +18,8 @@ spec:
     automated:
       prune: {{ .Values.spec.syncPolicy.automated.prune }}
       selfHeal: {{ .Values.spec.syncPolicy.automated.selfHeal }}
+    syncOptions:
+      - CreateNamespace=true
     retry:
       limit: 5
       backoff:

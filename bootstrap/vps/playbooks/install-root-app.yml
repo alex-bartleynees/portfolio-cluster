@@ -8,6 +8,8 @@
     namespace: "argocd"
     # Use overlays/vagrant for local testing, components for production
     root_app_path: "overlays/vagrant"
+    # Use metallb branch for testing, HEAD/main for production
+    git_branch: "metallb"
 
   tasks:
     - name: Install root app chart
@@ -16,6 +18,7 @@
         oci://registry-1.docker.io/{{ docker_username }}/root-app
         --namespace {{ namespace }}
         --set spec.source.path={{ root_app_path }}
+        --set spec.source.targetRevision={{ git_branch }}
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"
       register: helm_install
