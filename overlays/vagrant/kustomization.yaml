@@ -13,29 +13,20 @@ patches:
       kind: IPAddressPool
       name: first-pool
 
-  # Self-signed certificates instead of Let's Encrypt
+  # Let's Encrypt staging for testing
   - path: selfsigned-issuer.yaml
     target:
       kind: ClusterIssuer
+      name: letsencrypt-prod
 
+# Strategic merge patches (allow multiple resources per file)
+patchesStrategicMerge:
   # Local domain names using nip.io
-  - path: ingress-patches.yaml
-    target:
-      kind: Ingress
-
+  - ingress-patches.yaml
   # Reduced storage for Vagrant VM constraints
-  - path: storage-patches.yaml
-    target:
-      kind: PersistentVolumeClaim
-
+  - storage-patches.yaml
   # Reduced resource limits for Vagrant VM
-  - path: resource-patches.yaml
-    target:
-      kind: Deployment
-
-  - path: resource-patches.yaml
-    target:
-      kind: StatefulSet
+  - resource-patches.yaml
 
 # Disable resource-intensive components for Vagrant testing
 # Uncomment these to exclude non-essential services
