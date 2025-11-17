@@ -19,7 +19,7 @@ spec:
         valueFiles:
           - $values/components/platform/portfolio-site-ingress-values.yaml
     - repoURL: "https://github.com/alex-bartleynees/portfolio-cluster.git"
-      targetRevision: HEAD
+      targetRevision: metallb
       ref: values
   destination:
     server: https://kubernetes.default.svc
