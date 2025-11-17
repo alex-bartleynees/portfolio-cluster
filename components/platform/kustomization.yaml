@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   # Ingress controller
   - nginx-ingress.yaml
+  - ipaddresspool.yaml
 
   # Observability stack
   - kube-prometheus-stack-crds.yaml
