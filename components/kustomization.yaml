@@ -5,4 +5,3 @@ resources:
   - redis
   - redis-proxy
   - secrets
-  - metrics
