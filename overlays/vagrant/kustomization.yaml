@@ -13,8 +13,8 @@ patches:
       kind: IPAddressPool
       name: first-pool
 
-  # Let's Encrypt staging for testing
-  - path: letsencrypt-staging.yaml
+  # Self-signed certificates for local development
+  - path: selfsigned-issuer.yaml
     target:
       kind: ClusterIssuer
       name: letsencrypt
