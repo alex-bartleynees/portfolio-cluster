@@ -9,17 +9,13 @@ resources:
   # Database and cache
   - database.yaml
   - backup.yaml
-  - redis.yaml
 
   # Media services
-  - jellyfin.yaml
-  - jellyseer.yaml
   - immich-photos.yaml
 
   # Productivity
   - obsidian-livesync.yaml
   - office.yaml
-  - seafiles.yaml
 
   # Supporting services
   - reflector.yaml
