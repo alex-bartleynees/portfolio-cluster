@@ -15,7 +15,3 @@ resources:
 
   # Productivity
   - obsidian-livesync.yaml
-  - office.yaml
-
-  # Supporting services
-  - reflector.yaml

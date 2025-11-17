@@ -17,7 +17,7 @@ spec:
       chart: my-ingress-chart
       helm:
         valueFiles:
-          - $values/components/platform/product-feedback-api-ingress-values.yaml
+          - $values/components/configs/product-feedback-api-ingress-values.yaml
     - repoURL: "https://github.com/alex-bartleynees/portfolio-cluster.git"
       targetRevision: metallb
       ref: values

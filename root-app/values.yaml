@@ -5,7 +5,7 @@ spec:
   source:
     repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
     targetRevision: metallb
-    path: overlays/vagrant
+    path: environments/dev
   syncPolicy:
     automated:
       prune: true

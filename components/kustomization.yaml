@@ -1,8 +1,5 @@
 resources:
   - jellyfin
   - jellyseer
-  - certs/cluster-issuer.yaml
   - redis
   - redis-proxy
-  - secrets
-  - argocd

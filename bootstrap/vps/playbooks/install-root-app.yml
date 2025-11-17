@@ -6,8 +6,8 @@
     kube_config_dir: "/home/{{ ansible_user }}/.kube"
     release_name: "root-app"
     namespace: "argocd"
-    # Use overlays/vagrant for local testing, components for production
-    root_app_path: "overlays/vagrant"
+    # Use environments/dev for local testing, components for production
+    root_app_path: "environments/dev"
     # Use metallb branch for testing, HEAD/main for production
     git_branch: "metallb"
 
