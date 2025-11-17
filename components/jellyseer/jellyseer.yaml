@@ -9,7 +9,7 @@ metadata:
   name: media-jellyseer-ingress
   namespace: jellyseer
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt
+    cert-manager.io/cluster-issuer: "letsencrypt"
     # Basic Jellyfin support
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"

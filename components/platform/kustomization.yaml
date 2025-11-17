@@ -10,6 +10,7 @@ resources:
   - kube-prometheus-stack.yaml
   - loki.yaml
   - jaeger.yaml
+  - jaeger-pvc.yaml
   - opentelemetry-operator.yaml
   - otel-collector.yaml
 
