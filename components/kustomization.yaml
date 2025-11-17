@@ -3,3 +3,4 @@ resources:
   - jellyseer
   - redis
   - redis-proxy
+  - secrets
