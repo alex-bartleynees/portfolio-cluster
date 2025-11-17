@@ -18,3 +18,8 @@ patches:
     target:
       kind: ClusterIssuer
       name: letsencrypt
+
+  - path: ingress-patches.yaml
+    target:
+      kind: Ingress
+      name: argocd-server

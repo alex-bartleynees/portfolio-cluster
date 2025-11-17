@@ -5,3 +5,4 @@ resources:
   - redis
   - redis-proxy
   - secrets
+  - argocd

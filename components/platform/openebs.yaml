@@ -10,7 +10,7 @@ spec:
   source:
     chart: openebs
     repoURL: https://openebs.github.io/openebs
-    targetRevision: 4.3.0
+    targetRevision: 4.3.3
     helm:
       values: |
         openebsNDM:
