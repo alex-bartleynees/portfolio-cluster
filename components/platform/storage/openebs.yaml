@@ -13,6 +13,11 @@ spec:
     targetRevision: 4.3.3
     helm:
       values: |
+        # Disable pre-upgrade hook to avoid Job validation errors
+        hooks:
+          preUpgrade:
+            enabled: false
+
         openebsNDM:
           enabled: false
         webhook:
