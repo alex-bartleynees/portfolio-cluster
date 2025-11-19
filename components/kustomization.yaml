@@ -1,7 +1,2 @@
 resources:
-  - jellyfin
-  - jellyseer
-  - redis
-  - redis-proxy
   - secrets
-  - observability-workloads

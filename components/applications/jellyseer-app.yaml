@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: jellyfin
+  name: jellyseer
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
     targetRevision: metallb
-    path: components/jellyfin
+    path: components/applications/external-services/jellyseer
   destination:
     server: https://kubernetes.default.svc
-    namespace: jellyfin
+    namespace: jellyseer
   syncPolicy:
     automated:
       prune: true

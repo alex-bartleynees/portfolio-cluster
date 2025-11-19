@@ -15,5 +15,3 @@ spec:
   selector:
     app.kubernetes.io/name: redis
     app.kubernetes.io/component: master
----
-

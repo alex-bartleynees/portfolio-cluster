@@ -1,26 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: obsidian-livesync
+  name: jellyfin
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
     targetRevision: metallb
-    path: components/applications/workloads/obsidian-livesync
+    path: components/applications/external-services/jellyfin
   destination:
     server: https://kubernetes.default.svc
-    namespace: obsidian
+    namespace: jellyfin
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true
-  ignoreDifferences:
-    - group: apps
-      kind: StatefulSet
-      jsonPointers:
-        - /spec/volumeClaimTemplates
