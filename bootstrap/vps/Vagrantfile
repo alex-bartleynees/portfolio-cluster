@@ -17,7 +17,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     k8s.vm.disk :disk, size: "100GB", primary: true
     
     k8s.vm.provider "virtualbox" do |vb|
-      vb.memory = 4096
+      vb.memory = 8192
       vb.cpus = 4
       # Use GUI mode to work around NixOS VBoxManage setuid wrapper issue
       # This actually uses VBoxHeadless in the background

@@ -9,7 +9,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: couchdb-init
-          image: curlimages/curl:latest
+          image: curlimages/curl:8.16.0
           command:
             - /bin/sh
             - -c

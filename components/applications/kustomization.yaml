@@ -9,6 +9,8 @@ resources:
 
   # Media services
   - immich-photos.yaml
+  - jellyfin-app.yaml
+  - jellyseer-app.yaml
 
   # Productivity
   - obsidian-livesync.yaml

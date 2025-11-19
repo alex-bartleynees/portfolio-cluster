@@ -30,7 +30,7 @@ spec:
         fsGroup: 10001
       containers:
         - name: obsidian-db
-          image: docker.io/oleduc/docker-obsidian-livesync-couchdb:latest
+          image: docker.io/oleduc/docker-obsidian-livesync-couchdb:master
           imagePullPolicy: Always
           resources:
             requests:
