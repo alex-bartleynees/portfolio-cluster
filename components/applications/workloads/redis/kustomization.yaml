@@ -1,4 +1,3 @@
 resources:
-  - redis.yaml
   - certificate.yaml
   - ingress.yaml
