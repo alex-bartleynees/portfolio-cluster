@@ -16,6 +16,7 @@ resources:
   - obsidian-livesync.yaml
 
   # Redis
+  - redis.yaml
   - workloads/redis
   - redis-proxy-app.yaml
 
