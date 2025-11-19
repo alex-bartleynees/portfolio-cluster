@@ -37,7 +37,7 @@ spec:
             name: "openebs-hostpath"
             isDefaultClass: true
             reclaimPolicy: "Delete"
-            volumeBindingMode: "Immediate"  
+            volumeBindingMode: "WaitForFirstConsumer"
             basePath: "/var/openebs/local"
   destination:
     server: https://kubernetes.default.svc

@@ -7,4 +7,4 @@ metadata:
     argocd.argoproj.io/sync-wave: "-9"
 provisioner: openebs.io/local
 reclaimPolicy: Delete
-volumeBindingMode: Immediate
+volumeBindingMode: WaitForFirstConsumer

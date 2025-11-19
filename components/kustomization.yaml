@@ -4,3 +4,4 @@ resources:
   - redis
   - redis-proxy
   - secrets
+  - observability-workloads
