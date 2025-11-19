@@ -20,4 +20,4 @@ resources:
   - redis-proxy-app.yaml
 
   # Otel
-  - observablity-workloads
+  - workloads/observability-workloads
