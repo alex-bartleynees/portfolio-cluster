@@ -32,11 +32,13 @@ spec:
         resource_to_telemetry_conversion:
           enabled: true
 
-      loki:
-        endpoint: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
-
-      otlp:
+      otlp/jaeger:
         endpoint: "jaeger-collector.monitoring.svc.cluster.local:4317"
+        tls:
+          insecure: true
+
+      otlphttp/loki:
+        endpoint: "http://loki.monitoring.svc.cluster.local:3100/otlp"
         tls:
           insecure: true
 
@@ -48,7 +50,7 @@ spec:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [debug, otlp]
+          exporters: [debug, otlp/jaeger]
         metrics:
           receivers: [otlp]
           processors: [memory_limiter, batch]
@@ -56,4 +58,4 @@ spec:
         logs:
           receivers: [otlp]
           processors: [batch]
-          exporters: [loki]
+          exporters: [debug, otlphttp/loki]
