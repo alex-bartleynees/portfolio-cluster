@@ -54,6 +54,8 @@ kind: NetworkPolicy
 metadata:
   name: nginx-ingress-network-policy
   namespace: ingress-nginx
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   podSelector:
     matchLabels:
