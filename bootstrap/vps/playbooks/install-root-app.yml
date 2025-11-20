@@ -6,8 +6,6 @@
     kube_config_dir: "/home/{{ ansible_user }}/.kube"
     release_name: "root-app"
     namespace: "argocd"
-    # Use environments/dev for local testing, components for production
-    root_app_path: "components"
     git_branch: "HEAD"
 
   tasks:
@@ -16,7 +14,6 @@
         helm upgrade --install {{ release_name }}
         oci://registry-1.docker.io/{{ docker_username }}/root-app
         --namespace {{ namespace }}
-        --set spec.source.path={{ root_app_path }}
         --set spec.source.targetRevision={{ git_branch }}
       environment:
         KUBECONFIG: "{{ kube_config_dir }}/config"
