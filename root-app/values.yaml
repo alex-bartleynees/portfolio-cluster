@@ -4,8 +4,8 @@ spec:
     namespace: argocd
   source:
     repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
-    targetRevision: metallb
-    path: environments/dev
+    targetRevision: HEAD
+    path: components/secrets
   syncPolicy:
     automated:
       prune: true

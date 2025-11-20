@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
-    targetRevision: metallb
+    targetRevision: HEAD
     path: components/applications/workloads/backup
   destination:
     server: https://kubernetes.default.svc

@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
-    targetRevision: metallb
+    targetRevision: HEAD
     path: components/applications/external-services/immich
   destination:
     server: https://kubernetes.default.svc

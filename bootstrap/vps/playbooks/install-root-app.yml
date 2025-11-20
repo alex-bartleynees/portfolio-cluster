@@ -7,9 +7,8 @@
     release_name: "root-app"
     namespace: "argocd"
     # Use environments/dev for local testing, components for production
-    root_app_path: "environments/dev"
-    # Use metallb branch for testing, HEAD/main for production
-    git_branch: "metallb"
+    root_app_path: "components"
+    git_branch: "HEAD"
 
   tasks:
     - name: Install root app chart
