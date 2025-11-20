@@ -1,0 +1,103 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jaeger
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    chart: jaeger
+    repoURL: https://jaegertracing.github.io/helm-charts
+    targetRevision: 3.4.1
+    helm:
+      values: |
+        provisionDataStore:
+          cassandra: false
+        storage:
+          type: badger
+          badger:
+            ephemeral: false
+            persistence:
+              useExistingPvcName: jaeger-badger-data
+              mountPath: /mnt/data
+        allInOne:
+          enabled: true
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+          podSecurityContext:
+            fsGroup: 1000
+          initContainers:
+            - name: init-storage
+              image: busybox:1.28
+              command: ['sh', '-c']
+              args:
+                - mkdir -p /badger/data/key /badger/data/value && 
+                  chown -R 1000:1000 /badger/data
+              volumeMounts:
+                - name: badger-data
+                  mountPath: /badger/data
+              securityContext:
+                runAsUser: 0
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+          service:
+            type: ClusterIP
+            ports:
+              - name: grpc
+                port: 14250
+                protocol: TCP
+                targetPort: 14250
+              - name: http
+                port: 14268
+                protocol: TCP
+                targetPort: 14268
+              - name: admin
+                port: 14269
+                protocol: TCP
+                targetPort: 14269
+              - name: query
+                port: 16686
+                protocol: TCP
+                targetPort: 16686
+              - name: zipkin
+                port: 9411
+                protocol: TCP
+                targetPort: 9411
+              - name: otlp-grpc
+                port: 4317
+                protocol: TCP
+                targetPort: 4317
+              - name: otlp-http
+                port: 4318
+                protocol: TCP
+                targetPort: 4318
+        agent:
+          enabled: false
+        collector:
+          enabled: false
+        query:
+          enabled: false
+        ingester:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

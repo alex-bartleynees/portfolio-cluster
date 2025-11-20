@@ -1,0 +1,5 @@
+resources:
+  - certs
+  - ingress
+  - observability
+  - storage

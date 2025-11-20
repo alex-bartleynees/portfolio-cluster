@@ -1,0 +1,24 @@
+resources:
+  # Portfolio applications
+  - portfolio-site.yaml
+  - product-feedback-api.yaml
+
+  # Database and cache
+  - database.yaml
+  - backup-app.yaml
+
+  # Media services
+  - immich-photos.yaml
+  - jellyfin-app.yaml
+  - jellyseer-app.yaml
+
+  # Productivity
+  - obsidian-livesync.yaml
+
+  # Redis
+  - redis.yaml
+  - workloads/redis
+  - redis-proxy-app.yaml
+
+  # Otel
+  - workloads/observability-workloads

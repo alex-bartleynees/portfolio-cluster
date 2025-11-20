@@ -3,9 +3,9 @@
   hosts: k8s_master
   become: true
   vars:
-    helm_version: "v3.16.3"
+    helm_version: "v3.19.2"
     helm_architecture: "linux-amd64"
-    helm_checksum: "sha256:f5355c79190951eed23c5432a3b920e071f4c00a64f75e077de0dd4cb7b294ea"
+    helm_checksum: "sha256:2114c9dea2844dce6d0ee2d792a9aae846be8cf53d5b19dc2988b5a0e8fec26e"
 
   tasks:
     - name: Check if Helm is installed

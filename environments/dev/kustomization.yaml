@@ -1,0 +1,17 @@
+patches:
+  # MetalLB IP address pool for local network
+  - path: metallb-ipaddresspool-patch.yaml
+    target:
+      kind: IPAddressPool
+      name: first-pool
+
+  # Self-signed certificates for local development
+  - path: selfsigned-issuer.yaml
+    target:
+      kind: ClusterIssuer
+      name: letsencrypt
+
+  - path: ingress-patches.yaml
+    target:
+      kind: Ingress
+      name: argocd-server

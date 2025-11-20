@@ -31,7 +31,7 @@
       failed_when: false
       changed_when: false
 
-    - name: Connect to Tailscale with SSH and security settings
+    - name: Connect to Tailscale with SSH and DNS disabled
       command: "tailscale up --authkey={{ tailscale_authkey }} --ssh --accept-dns=false --accept-routes=false --advertise-exit-node=false"
       when:
         - tailscale_authkey != ""
@@ -50,6 +50,26 @@
           sudo tailscale up --ssh --accept-dns=false --accept-routes=false --advertise-exit-node=false
           Then authenticate via the provided URL.
       when: tailscale_authkey == ""
+
+    - name: Ensure public DNS is configured
+      block:
+        - name: Add public DNS servers to resolv.conf
+          lineinfile:
+            path: /etc/resolv.conf
+            line: "nameserver {{ item }}"
+            insertafter: EOF
+            state: present
+          loop:
+            - 8.8.8.8
+            - 1.1.1.1
+
+        - name: Test DNS resolution
+          command: getent hosts google.com
+          register: dns_test
+          retries: 3
+          delay: 2
+          until: dns_test.rc == 0
+          changed_when: false
 
     - name: Disable standard SSH daemon (optional security hardening)
       systemd:

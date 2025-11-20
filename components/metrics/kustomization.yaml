@@ -1,9 +1,0 @@
-resources:
-  - application.yaml
-  - kube-prometheus-stack.yaml
-  - kube-prometheus-stack-crds.yaml
-  - opentelemetry-operator-app.yaml
-  - otel-collector-app.yaml
-  - loki.yaml
-  - jaeger-pvc.yaml
-  - jaeger.yaml
