@@ -9,7 +9,7 @@ metadata:
   name: immich-ingress
   namespace: photos
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: "letsencrypt"
     nginx.ingress.kubernetes.io/proxy-body-size: "50g"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
