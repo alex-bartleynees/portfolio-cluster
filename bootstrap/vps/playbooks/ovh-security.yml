@@ -21,17 +21,61 @@
         name: '*'
         state: latest
 
+    - name: Check if reboot is required after kernel update
+      shell: |
+        RUNNING_KERNEL=$(uname -r)
+        LATEST_KERNEL=$(rpm -q kernel --last | head -1 | awk '{print $1}' | sed 's/kernel-//')
+        if [ "$RUNNING_KERNEL" != "$LATEST_KERNEL" ]; then
+          echo "reboot_required"
+        else
+          echo "no_reboot"
+        fi
+      register: reboot_check
+      changed_when: false
+
+    - name: Notify if reboot is required
+      debug:
+        msg: |
+          WARNING: Kernel update detected. A reboot is required.
+          Running kernel: {{ ansible_kernel }}
+          Please reboot and re-run this playbook.
+      when: reboot_check.stdout == "reboot_required"
+
+    - name: Fail if kernel update requires reboot
+      fail:
+        msg: "Kernel was updated. Please reboot the system and re-run this playbook."
+      when: reboot_check.stdout == "reboot_required"
+
     - name: Install EPEL repository
       dnf:
         name: epel-release
         state: present
+
+    - name: Install kernel modules and headers
+      dnf:
+        name:
+          - kernel-modules
+          - kernel-modules-extra
+          - kernel-devel
+        state: present
+
+    - name: Load br_netfilter kernel module
+      modprobe:
+        name: br_netfilter
+        state: present
+
+    - name: Ensure br_netfilter module loads on boot
+      lineinfile:
+        path: /etc/modules-load.d/k8s.conf
+        line: br_netfilter
+        create: yes
 
     - name: Install security packages
       dnf:
         name:
           - fail2ban
           - dnf-automatic
-          - rkhunter
+          - aide  # Advanced Intrusion Detection Environment (rkhunter alternative)
         state: present
 
     - name: Configure SSH hardening
@@ -99,24 +143,19 @@
         enabled: true
       when: enable_fail2ban and not disable_standard_ssh
 
-    - name: Load bridge kernel module
-      modprobe:
-        name: br_netfilter
-        state: present
-
-    - name: Ensure bridge module loads on boot
-      lineinfile:
-        path: /etc/modules-load.d/br_netfilter.conf
-        line: br_netfilter
-        create: yes
-
-    - name: Configure basic kernel parameters for security
+    - name: Configure kernel parameters for security and Kubernetes
       sysctl:
         name: "{{ item.name }}"
         value: "{{ item.value }}"
-        sysctl_file: /etc/sysctl.d/99-security.conf
-        reload: yes
+        sysctl_file: /etc/sysctl.d/99-k8s-cri.conf
+        sysctl_set: yes
+        state: present
       loop:
+        # Bridge netfilter (required for Kubernetes)
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+        - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+        # IP forwarding (required for Kubernetes)
+        - { name: 'net.ipv4.ip_forward', value: '1' }
         # Network security
         - { name: 'net.ipv4.conf.all.send_redirects', value: '0' }
         - { name: 'net.ipv4.conf.default.send_redirects', value: '0' }
@@ -124,34 +163,14 @@
         - { name: 'net.ipv4.conf.default.accept_redirects', value: '0' }
         - { name: 'net.ipv4.conf.all.secure_redirects', value: '0' }
         - { name: 'net.ipv4.conf.default.secure_redirects', value: '0' }
-        - { name: 'net.ipv4.ip_forward', value: '1' }  # Needed for Kubernetes
         - { name: 'net.ipv4.conf.all.log_martians', value: '1' }
         - { name: 'net.ipv4.icmp_echo_ignore_broadcasts', value: '1' }
         - { name: 'net.ipv4.icmp_ignore_bogus_error_responses', value: '1' }
         - { name: 'net.ipv4.tcp_syncookies', value: '1' }
-
-    - name: Configure bridge kernel parameters for Kubernetes
-      sysctl:
-        name: "{{ item.name }}"
-        value: "{{ item.value }}"
-        sysctl_file: /etc/sysctl.d/99-security.conf
-        reload: yes
-      loop:
-        - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }  # Kubernetes
-        - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }  # Kubernetes
-      ignore_errors: yes
-
-    - name: Configure memory protection parameters
-      sysctl:
-        name: "{{ item.name }}"
-        value: "{{ item.value }}"
-        sysctl_file: /etc/sysctl.d/99-security.conf
-        reload: yes
-      loop:
+        # Memory protection
         - { name: 'kernel.dmesg_restrict', value: '1' }
         - { name: 'kernel.kptr_restrict', value: '2' }
         - { name: 'kernel.yama.ptrace_scope', value: '1' }
-      ignore_errors: yes
 
     - name: Configure dnf-automatic
       lineinfile:
@@ -195,16 +214,16 @@
         state: absent
       ignore_errors: true
 
-    - name: Configure rkhunter
-      lineinfile:
-        path: /etc/rkhunter.conf
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
-        backup: yes
-      loop:
-        - { regexp: '^UPDATE_MIRRORS=', line: 'UPDATE_MIRRORS=1' }
-        - { regexp: '^MIRRORS_MODE=', line: 'MIRRORS_MODE=0' }
-        - { regexp: '^WEB_CMD=', line: 'WEB_CMD=""' }
+    - name: Initialize AIDE database
+      command: aide --init
+      args:
+        creates: /var/lib/aide/aide.db.new.gz
+      ignore_errors: true
+
+    - name: Copy AIDE database
+      command: cp /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
+      args:
+        creates: /var/lib/aide/aide.db.gz
       ignore_errors: true
 
     - name: Configure log rotation
