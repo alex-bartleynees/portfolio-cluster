@@ -1,0 +1,36 @@
+- name: Join worker nodes to Kubernetes cluster
+  hosts: k8s_nodes
+  become: true
+  tasks:
+    - name: Check if node is already joined to the cluster
+      command: kubectl get nodes {{ inventory_hostname }}
+      register: node_check
+      failed_when: false
+      changed_when: false
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+
+    - name: Get join command from master
+      command: kubeadm token create --print-join-command
+      register: join_command
+      when: node_check.rc != 0
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+      run_once: true
+
+    - name: Join worker node to cluster
+      shell: "{{ join_command.stdout }}"
+      when:
+        - node_check.rc != 0
+        - join_command.stdout is defined
+
+    - name: Label worker nodes
+      shell: kubectl label node {{ inventory_hostname }} node-role.kubernetes.io/worker=worker --overwrite
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+      when: node_check.rc != 0
+
+    - name: Verify node joined successfully
+      shell: kubectl get nodes {{ inventory_hostname }}
+      register: node_status
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+      retries: 5
+      delay: 10
+      until: node_status.rc == 0
