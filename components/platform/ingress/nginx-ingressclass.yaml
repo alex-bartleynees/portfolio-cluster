@@ -1,0 +1,9 @@
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: nginx
+  annotations:
+    # This IngressClass is now handled by Traefik, not NGINX
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  controller: traefik.io/ingress-controller
