@@ -46,6 +46,19 @@ spec:
       protocol: TCP
       name: http
 ---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: media-jellyfin
+  namespace: jellyfin
+subsets:
+  - addresses:
+      - ip: "100.89.61.64"
+    ports:
+      - name: http
+        port: 80
+        protocol: TCP
+---
 apiVersion: discovery.k8s.io/v1
 kind: EndpointSlice
 metadata:
