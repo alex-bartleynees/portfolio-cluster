@@ -1,3 +1,4 @@
 resources:
-  - nginx-ingress.yaml
+  #- nginx-ingress.yaml
+  - traefik-ingress.yaml
   - ipaddresspool.yaml
