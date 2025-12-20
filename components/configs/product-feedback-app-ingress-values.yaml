@@ -2,23 +2,8 @@ ingress:
   enabled: true
   className: nginx
   annotations:
-    kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/proxy-next-upstream: "error timeout http_502"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "3"
-    # Cache Configuration
-    nginx.ingress.kubernetes.io/proxy-cache: "true"
-    nginx.ingress.kubernetes.io/proxy-cache-path: "/var/cache/nginx keys_zone=STATIC:10m inactive=7d use_temp_path=off"
-    # HTTP/2
-    nginx.ingress.kubernetes.io/use-http2: "true"
-    nginx.ingress.kubernetes.io/add-headers: |
-      Vary: Accept-Encoding
-    nginx.ingress.kubernetes.io/use-gzip: "true"
-    nginx.ingress.kubernetes.io/gzip-level: "6"
-    nginx.ingress.kubernetes.io/gzip-min-length: "1024"
-    nginx.ingress.kubernetes.io/gzip-types: "application/javascript application/json text/plain text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
   maxBodySize: "8m"
   timeout:
     connect: "5"
