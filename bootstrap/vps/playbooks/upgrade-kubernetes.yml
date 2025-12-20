@@ -1,0 +1,256 @@
+---
+- name: Upgrade Kubernetes Cluster
+  hosts: k8s_nodes
+  become: true
+  vars:
+    target_k8s_version: "1.35"  # Major.Minor version (e.g., "1.35", "1.36")
+    backup_dir: "/var/backups/kubernetes"
+    user: "{{ ansible_user }}"
+
+  tasks:
+    - name: Create backup directory
+      ansible.builtin.file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Check current Kubernetes version
+      command: kubectl version --short --client
+      register: current_version
+      changed_when: false
+      failed_when: false
+
+    - name: Display current version
+      debug:
+        msg: "Current Kubernetes version: {{ current_version.stdout }}"
+
+    - name: Update Kubernetes repository to target version
+      shell:
+        cmd: |
+          cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://pkgs.k8s.io/core:/stable:/v{{ target_k8s_version }}/rpm/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://pkgs.k8s.io/core:/stable:/v{{ target_k8s_version }}/rpm/repodata/repomd.xml.key
+          exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+          EOF
+
+    - name: Clear DNF cache
+      command: dnf clean all
+      changed_when: true
+
+    - name: Check available kubeadm versions
+      shell: dnf list --showduplicates kubeadm --disableexcludes=kubernetes | grep "{{ target_k8s_version }}"
+      register: available_versions
+      changed_when: false
+      failed_when: available_versions.rc != 0
+
+    - name: Display available versions
+      debug:
+        msg: "{{ available_versions.stdout_lines }}"
+
+    - name: Upgrade kubeadm to target version
+      dnf:
+        name: "kubeadm-{{ target_k8s_version }}.*"
+        disable_excludes: kubernetes
+        state: latest
+      register: kubeadm_upgrade
+
+    - name: Verify kubeadm version
+      command: kubeadm version -o short
+      register: kubeadm_version
+      changed_when: false
+
+    - name: Extract full semantic version
+      set_fact:
+        full_k8s_version: "{{ kubeadm_version.stdout | regex_replace('^v', '') }}"
+
+    - name: Display kubeadm version
+      debug:
+        msg: "Upgraded kubeadm to: {{ kubeadm_version.stdout }}"
+
+- name: Backup etcd and upgrade control plane
+  hosts: k8s_master
+  become: true
+  vars:
+    target_k8s_version: "1.35"
+    backup_dir: "/var/backups/kubernetes"
+
+  tasks:
+    - name: Get full semantic version from kubeadm
+      command: kubeadm version -o short
+      register: kubeadm_full_version
+      changed_when: false
+
+    - name: Set full version fact
+      set_fact:
+        full_k8s_version: "{{ kubeadm_full_version.stdout | regex_replace('^v', '') }}"
+
+    - name: Display target upgrade version
+      debug:
+        msg: "Will upgrade to Kubernetes v{{ full_k8s_version }}"
+
+    - name: Check current cluster version
+      shell: kubectl version --short 2>/dev/null | grep 'Server Version' | awk '{print $3}' || echo "unknown"
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: current_cluster_version
+      changed_when: false
+      failed_when: false
+
+    - name: Set skip upgrade flag if already at target version
+      set_fact:
+        skip_upgrade: "{{ current_cluster_version.stdout | regex_replace('^v', '') == full_k8s_version }}"
+
+    - name: Display upgrade status
+      debug:
+        msg: "{{ 'Cluster already at v' + full_k8s_version + ', skipping control plane upgrade' if skip_upgrade else 'Upgrading cluster from ' + current_cluster_version.stdout + ' to v' + full_k8s_version }}"
+
+    - name: Check kubelet flags file
+      stat:
+        path: /var/lib/kubelet/kubeadm-flags.env
+      register: kubelet_flags_file
+
+    - name: Read kubelet flags file
+      slurp:
+        src: /var/lib/kubelet/kubeadm-flags.env
+      register: kubelet_flags_content
+      when: kubelet_flags_file.stat.exists
+      failed_when: false
+
+    - name: Fix empty/corrupted kubelet flags file
+      copy:
+        dest: /var/lib/kubelet/kubeadm-flags.env
+        content: 'KUBELET_KUBEADM_ARGS="--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock"'
+        mode: '0644'
+      when: not kubelet_flags_file.stat.exists or (kubelet_flags_content.content | b64decode | length == 0)
+
+    - name: Create etcd snapshot backup
+      shell: |
+        ETCDCTL_API=3 etcdctl snapshot save {{ backup_dir }}/etcd-snapshot-$(date +%Y%m%d-%H%M%S).db \
+          --endpoints=https://127.0.0.1:2379 \
+          --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+          --cert=/etc/kubernetes/pki/etcd/server.crt \
+          --key=/etc/kubernetes/pki/etcd/server.key
+      register: etcd_backup
+      changed_when: etcd_backup.rc == 0
+      failed_when: false
+      when: not skip_upgrade
+
+    - name: Display etcd backup status
+      debug:
+        msg: "{{ 'ETCD backup created successfully' if etcd_backup.rc == 0 else 'Warning: ETCD backup failed - continuing anyway' }}"
+      when: not skip_upgrade
+
+    - name: Run kubeadm upgrade plan
+      command: kubeadm upgrade plan
+      register: upgrade_plan
+      changed_when: false
+      when: not skip_upgrade
+
+    - name: Display upgrade plan
+      debug:
+        msg: "{{ upgrade_plan.stdout_lines }}"
+      when: not skip_upgrade
+
+    - name: Pause for confirmation
+      pause:
+        prompt: "Review the upgrade plan above. Press ENTER to continue with the upgrade, or Ctrl+C to abort"
+      when: not skip_upgrade
+
+    - name: Apply kubeadm upgrade
+      command: kubeadm upgrade apply v{{ full_k8s_version }} -y
+      register: upgrade_apply
+      changed_when: upgrade_apply.rc == 0
+      when: not skip_upgrade
+
+    - name: Display upgrade result
+      debug:
+        msg: "{{ upgrade_apply.stdout_lines }}"
+      when: not skip_upgrade
+
+    - name: Get Kubernetes node name
+      shell: kubectl get nodes -o jsonpath='{.items[0].metadata.name}'
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: k8s_node_name
+      changed_when: false
+
+    - name: Drain master node
+      shell: |
+        kubectl drain {{ k8s_node_name.stdout }} \
+          --ignore-daemonsets \
+          --delete-emptydir-data \
+          --force \
+          --timeout=300s
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: drain_result
+      changed_when: drain_result.rc == 0
+
+    - name: Upgrade kubelet and kubectl
+      dnf:
+        name:
+          - "kubelet-{{ target_k8s_version }}.*"
+          - "kubectl-{{ target_k8s_version }}.*"
+        disable_excludes: kubernetes
+        state: latest
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    - name: Restart kubelet
+      systemd:
+        name: kubelet
+        state: restarted
+
+    - name: Wait for kubelet to be ready
+      wait_for:
+        timeout: 30
+      delegate_to: localhost
+
+    - name: Uncordon master node
+      command: kubectl uncordon {{ k8s_node_name.stdout }}
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: uncordon_result
+      changed_when: uncordon_result.rc == 0
+
+    - name: Wait for node to be ready
+      shell: kubectl get nodes {{ k8s_node_name.stdout }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: node_ready
+      until: node_ready.stdout == "True"
+      retries: 12
+      delay: 10
+      changed_when: false
+
+    - name: Verify upgrade
+      command: kubectl get nodes -o wide
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: nodes_status
+      changed_when: false
+
+    - name: Display nodes status
+      debug:
+        msg: "{{ nodes_status.stdout_lines }}"
+
+    - name: Verify component versions
+      command: kubectl version
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: final_version
+      changed_when: false
+
+    - name: Display final versions
+      debug:
+        msg: "{{ final_version.stdout_lines }}"
+
+    - name: Display success message
+      debug:
+        msg: "Kubernetes upgrade to v{{ target_k8s_version }} completed successfully!"

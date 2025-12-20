@@ -24,11 +24,13 @@
     - name: Check if reboot is required after kernel update
       shell: |
         RUNNING_KERNEL=$(uname -r)
-        LATEST_KERNEL=$(rpm -q kernel --last | head -1 | awk '{print $1}' | sed 's/kernel-//')
-        if [ "$RUNNING_KERNEL" != "$LATEST_KERNEL" ]; then
-          echo "reboot_required"
-        else
+        # Rocky Linux 10+ uses kernel-core packages
+        if rpm -q "kernel-core-$RUNNING_KERNEL" &>/dev/null; then
           echo "no_reboot"
+        elif rpm -q "kernel-$RUNNING_KERNEL" &>/dev/null; then
+          echo "no_reboot"
+        else
+          echo "reboot_required"
         fi
       register: reboot_check
       changed_when: false
