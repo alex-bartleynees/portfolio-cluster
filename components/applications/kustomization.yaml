@@ -2,6 +2,7 @@ resources:
   # Portfolio applications
   - portfolio-site.yaml
   - product-feedback-api.yaml
+  - product-feedback-app.yaml
 
   # Database and cache
   - database.yaml
