@@ -24,7 +24,6 @@ spec:
               - apiGroups:
                 - ""
                 kinds:
-                - Endpoints
                 - Lease
                 - Event
                 - SelfSubjectReview
