@@ -14,11 +14,10 @@ spec:
         server:
           config:
             url: https://argo-cd.alexbartleynees.com
-            params:
-              server.insecure: true
         configs:
           params:
             enableOCI: true
+            server.insecure: "true"
           cm:
             kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
             resource.exclusions: |
