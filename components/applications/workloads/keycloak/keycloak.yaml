@@ -89,9 +89,6 @@ spec:
               done
               echo "PostgreSQL is ready. Creating database and user..."
               psql -v ON_ERROR_STOP=1 <<-EOSQL
-                SELECT 'CREATE DATABASE keycloak'
-                WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'keycloak')\gexec
-
                 DO \$\$
                 BEGIN
                   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${KC_DB_USERNAME}') THEN
@@ -99,8 +96,17 @@ spec:
                   END IF;
                 END
                 \$\$;
+              EOSQL
 
-                GRANT ALL PRIVILEGES ON DATABASE keycloak TO ${KC_DB_USERNAME};
+              psql -v ON_ERROR_STOP=1 <<-EOSQL
+                SELECT 'CREATE DATABASE keycloak OWNER ${KC_DB_USERNAME}'
+                WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'keycloak')\gexec
+              EOSQL
+
+              psql -d keycloak -v ON_ERROR_STOP=1 <<-EOSQL
+                GRANT ALL ON SCHEMA public TO ${KC_DB_USERNAME};
+                GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${KC_DB_USERNAME};
+                GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ${KC_DB_USERNAME};
               EOSQL
               echo "Database setup complete."
       containers:
