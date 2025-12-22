@@ -8,6 +8,9 @@ resources:
   - database.yaml
   - backup-app.yaml
 
+  # Identity and authentication
+  - keycloak-app.yaml
+
   # Media services
   - immich-photos.yaml
   - jellyfin-app.yaml
