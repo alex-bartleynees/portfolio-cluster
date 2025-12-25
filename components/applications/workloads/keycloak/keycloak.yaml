@@ -79,6 +79,11 @@ spec:
                 secretKeyRef:
                   name: keycloak-db-credentials
                   key: KC_DB_PASSWORD
+          resources:
+            requests:
+              ephemeral-storage: "50Mi"
+            limits:
+              ephemeral-storage: "100Mi"
           command:
             - sh
             - -c
@@ -190,6 +195,8 @@ spec:
             limits:
               cpu: 2000m
               memory: 2000Mi
+              ephemeral-storage: "1Gi"
             requests:
               cpu: 500m
               memory: 1700Mi
+              ephemeral-storage: "200Mi"
