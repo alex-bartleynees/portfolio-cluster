@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: seaweedfs-ingress
+  namespace: seaweedfs
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - cdn.alexbartleynees.com
+      secretName: seaweedfs-tls
+  rules:
+    - host: cdn.alexbartleynees.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: seaweedfs-filer
+                port:
+                  number: 8888

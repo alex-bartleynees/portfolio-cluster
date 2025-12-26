@@ -75,6 +75,8 @@ spec:
             enabled: true
             port: 8333
             allowEmptyFolder: false
+            enableAuth: true
+            existingConfigSecret: seaweedfs-s3-config
           persistence:
             enabled: true
             size: 5Gi

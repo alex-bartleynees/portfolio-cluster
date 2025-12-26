@@ -26,6 +26,7 @@ resources:
 
   # Storage
   - seaweedfs.yaml
+  - workloads/seaweedfs
 
   # Otel
   - workloads/observability-workloads
