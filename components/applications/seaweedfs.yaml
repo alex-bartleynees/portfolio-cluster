@@ -1,0 +1,112 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: seaweedfs
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://seaweedfs.github.io/seaweedfs/helm
+    targetRevision: 4.0.0
+    chart: seaweedfs
+    helm:
+      values: |
+        global:
+          createClusterRole: true
+
+        master:
+          enabled: true
+          replicas: 1
+          port: 9333
+          grpcPort: 19333
+          persistence:
+            enabled: true
+            size: 1Gi
+            storageClass: ""
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 500m
+          livenessProbe:
+            enabled: true
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          readinessProbe:
+            enabled: true
+            initialDelaySeconds: 10
+            periodSeconds: 15
+
+        volume:
+          enabled: true
+          replicas: 1
+          port: 8080
+          grpcPort: 18080
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClass: ""
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+          livenessProbe:
+            enabled: true
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          readinessProbe:
+            enabled: true
+            initialDelaySeconds: 10
+            periodSeconds: 15
+
+        filer:
+          enabled: true
+          replicas: 1
+          port: 8888
+          grpcPort: 18888
+          s3:
+            enabled: true
+            port: 8333
+            allowEmptyFolder: false
+          persistence:
+            enabled: true
+            size: 5Gi
+            storageClass: ""
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+          livenessProbe:
+            enabled: true
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          readinessProbe:
+            enabled: true
+            initialDelaySeconds: 10
+            periodSeconds: 15
+
+        s3:
+          enabled: true
+          port: 8333
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: seaweedfs
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - SkipDryRunOnMissingResource=true

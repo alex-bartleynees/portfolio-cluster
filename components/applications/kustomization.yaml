@@ -24,5 +24,8 @@ resources:
   - workloads/redis
   - redis-proxy-app.yaml
 
+  # Storage
+  - seaweedfs.yaml
+
   # Otel
   - workloads/observability-workloads
