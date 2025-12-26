@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: product-feedback-bff
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/alex-bartleynees/product-feedback-bff.git
+      path: deployment/helm-charts/product-feedback-bff
+      targetRevision: HEAD
+      helm:
+        valueFiles:
+          - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: product-feedback
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
