@@ -12,15 +12,6 @@ spec:
       helm:
         valueFiles:
           - values.yaml
-    - repoURL: registry-1.docker.io/creativefree
-      targetRevision: 0.4.0
-      chart: my-ingress-chart
-      helm:
-        valueFiles:
-          - $values/components/configs/product-feedback-api-ingress-values.yaml
-    - repoURL: "https://github.com/alex-bartleynees/portfolio-cluster.git"
-      targetRevision: HEAD
-      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: product-feedback
