@@ -1,0 +1,58 @@
+---
+- name: Disable Cockpit Admin Interface
+  hosts: k8s_master
+  become: true
+
+  tasks:
+    - name: Check if Cockpit is installed
+      command: rpm -q cockpit
+      register: cockpit_installed
+      failed_when: false
+      changed_when: false
+
+    - name: Stop Cockpit socket
+      systemd:
+        name: cockpit.socket
+        state: stopped
+        enabled: false
+      when: cockpit_installed.rc == 0
+      ignore_errors: true
+
+    - name: Stop Cockpit service
+      systemd:
+        name: cockpit
+        state: stopped
+        enabled: false
+      when: cockpit_installed.rc == 0
+      ignore_errors: true
+
+    - name: Block Cockpit port 9090 in public zone
+      firewalld:
+        port: "9090/tcp"
+        permanent: yes
+        state: disabled
+        immediate: yes
+        zone: public
+      when: cockpit_installed.rc == 0
+      ignore_errors: true
+
+    - name: Remove Cockpit from firewalld services
+      firewalld:
+        service: cockpit
+        permanent: yes
+        state: disabled
+        immediate: yes
+        zone: public
+      ignore_errors: true
+
+    - name: Reload firewall
+      command: firewall-cmd --reload
+      changed_when: true
+
+    - name: Display status
+      debug:
+        msg: |
+          Cockpit has been disabled:
+          - cockpit.socket: stopped and disabled
+          - cockpit service: stopped and disabled
+          - Port 9090: blocked in firewall

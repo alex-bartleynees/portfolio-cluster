@@ -1,6 +1,9 @@
 - name: OVHcloud Security Hardening
   import_playbook: playbooks/ovh-security.yml
 
+- name: Disable Cockpit Admin Interface
+  import_playbook: playbooks/cockpit-security.yml
+
 - name: Install Tailscale with SSH
   import_playbook: playbooks/tailscale.yml
 
