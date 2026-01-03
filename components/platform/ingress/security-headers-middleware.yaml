@@ -1,0 +1,26 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: security-headers
+  namespace: traefik
+  annotations:
+    # Must be after Traefik (wave 0) since it installs the CRDs
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  headers:
+    # HSTS - Enforce HTTPS for 1 year, include subdomains
+    stsSeconds: 31536000
+    stsIncludeSubdomains: true
+    stsPreload: true
+    # Prevent clickjacking
+    frameDeny: true
+    # Prevent MIME type sniffing
+    contentTypeNosniff: true
+    # XSS Protection
+    browserXssFilter: true
+    # Referrer Policy
+    referrerPolicy: "strict-origin-when-cross-origin"
+    # Permissions Policy
+    permissionsPolicy: "camera=(), microphone=(), geolocation=(), payment=()"
+    # Content Security Policy
+    contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
