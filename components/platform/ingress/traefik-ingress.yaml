@@ -16,6 +16,9 @@ spec:
         providers:
           kubernetesIngressNginx:
             enabled: true
+        # Apply security headers middleware to HTTPS entrypoint
+        additionalArguments:
+          - "--entrypoints.websecure.http.middlewares=traefik-security-headers@kubernetescrd"
   destination:
     server: https://kubernetes.default.svc
     namespace: traefik
