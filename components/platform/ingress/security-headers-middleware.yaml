@@ -12,15 +12,11 @@ spec:
     stsSeconds: 31536000
     stsIncludeSubdomains: true
     stsPreload: true
-    # Prevent clickjacking
-    frameDeny: true
     # Prevent MIME type sniffing
     contentTypeNosniff: true
-    # XSS Protection
-    browserXssFilter: true
     # Referrer Policy
     referrerPolicy: "strict-origin-when-cross-origin"
     # Permissions Policy
     permissionsPolicy: "camera=(), microphone=(), geolocation=(), payment=()"
-    # Content Security Policy
-    contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    # Content Security Policy - permissive for media apps
+    contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' wss: https:; media-src 'self' https: blob:; worker-src 'self' blob:; frame-src 'self'; base-uri 'self'; form-action 'self'"
