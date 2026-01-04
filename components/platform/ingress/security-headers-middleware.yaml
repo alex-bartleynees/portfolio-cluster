@@ -19,4 +19,4 @@ spec:
     # Permissions Policy
     permissionsPolicy: "camera=(), microphone=(), geolocation=(), payment=()"
     # Content Security Policy - permissive for media apps and OAuth flows
-    contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' wss: https:; media-src 'self' https: blob:; worker-src 'self' blob:; frame-src 'self' https:; base-uri 'self'; form-action 'self' https:"
+    contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' wss: https:; media-src 'self' https: blob:; worker-src 'self' blob:; frame-src 'self' https:; base-uri 'self'; form-action 'self' https: http://localhost:*"
