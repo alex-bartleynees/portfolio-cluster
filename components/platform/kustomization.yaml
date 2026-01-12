@@ -3,3 +3,4 @@ resources:
   - ingress
   - observability
   - storage
+  - rabbitmq
