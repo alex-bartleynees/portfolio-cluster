@@ -6,16 +6,16 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 3
+  replicas: 1
   persistence:
     storage: 20Gi
     storageClassName: "openebs-hostpath"
   resources:
     requests:
-      cpu: 1500m
-      memory: 3Gi
+      cpu: 200m
+      memory: 512Mi
     limits:
-      cpu: 2000m
-      memory: 4Gi
+      cpu: 500m
+      memory: 1Gi
   service:
     type: ClusterIP
