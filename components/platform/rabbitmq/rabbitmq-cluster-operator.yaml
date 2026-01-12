@@ -8,8 +8,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
-    targetRevision: 2.19.0
+    repoURL: https://github.com/rabbitmq/cluster-operator.git
+    targetRevision: v2.19.0
+    path: config/crd
   destination:
     server: https://kubernetes.default.svc
     namespace: rabbitmq-system
@@ -21,7 +22,6 @@ spec:
       - CreateNamespace=true
       - Replace=true
       - ServerSideApply=true
-      - PreserveResourcesOnDeletion=true
     retry:
       limit: 5
       backoff:
