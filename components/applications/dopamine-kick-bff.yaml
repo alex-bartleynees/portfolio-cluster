@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dopamine-kick-bff
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/alex-bartleynees/authgateway-bff.git
+      path: deployment/helm-charts/authgateway-bff
+      targetRevision: HEAD
+      helm:
+        valueFiles:
+          - values.yaml
+          - values-dopamime-kick.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dopamine-kick
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
