@@ -12,7 +12,7 @@ spec:
       helm:
         valueFiles:
           - values.yaml
-          - values-dopamime-kick.yaml
+          - values-dopamine-kick.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: dopamine-kick
