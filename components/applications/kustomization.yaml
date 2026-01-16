@@ -6,6 +6,7 @@ resources:
   - product-feedback-bff.yaml
 
   - dopamine-kick-bff.yaml
+  - dopamine-kick-app.yaml
 
   # Database and cache
   - database.yaml
