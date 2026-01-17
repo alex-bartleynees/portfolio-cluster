@@ -1,0 +1,189 @@
+---
+- name: Restore PostgreSQL from S3 Backup (Kubernetes)
+  hosts: k8s_master
+  become: true
+  vars_files:
+    - ./group_vars/all/postgres-backup-vault.yml
+  vars:
+    s3_bucket: "postgres-portfolio-backup"
+    s3_prefix: "postgres-backups"
+    # Set this to the specific backup file you want to restore, e.g. "all_2026-01-18T12:34:56Z.sql.gz"
+    # Or leave empty to restore the latest backup
+    s3_backup_file: ""
+    # Set this if your backups are encrypted (must match ENCRYPTION_PASSWORD from backup job)
+    encryption_password: ""
+    local_backup_path: "/tmp/pg_backup.sql.gz"
+    postgres_namespace: "database"
+    postgres_pod: "postgres-db-0"
+    postgres_container: "postgres-db"
+    pod_backup_path: "/tmp/pg_restore.sql.gz"
+    aws_credentials:
+      aws_access_key: "{{ vault_s3_access_key }}"
+      aws_secret_key: "{{ vault_s3_secret_key }}"
+      aws_region: "us-east-2"
+      aws_endpoint: "https://s3.us-east-2.amazonaws.com"
+
+  tasks:
+    - name: Install required packages on host
+      dnf:
+        name:
+          - python3-boto3
+          - awscli
+        state: present
+
+    - name: Create .aws directory
+      file:
+        path: /root/.aws
+        state: directory
+        mode: "0700"
+        owner: root
+        group: root
+
+    - name: Create AWS credentials file
+      copy:
+        content: |
+          [default]
+          aws_access_key_id = {{ aws_credentials.aws_access_key }}
+          aws_secret_access_key = {{ aws_credentials.aws_secret_key }}
+          region = {{ aws_credentials.aws_region }}
+        dest: /root/.aws/credentials
+        mode: "0600"
+        owner: root
+        group: root
+      no_log: true
+
+    - name: List available backups from S3
+      command: >
+        aws s3 ls s3://{{ s3_bucket }}/{{ s3_prefix }}/
+        --endpoint-url {{ aws_credentials.aws_endpoint }}
+      register: s3_list
+      changed_when: false
+
+    - name: Display available backups
+      debug:
+        msg: "{{ s3_list.stdout_lines }}"
+
+    - name: Determine backup file to restore
+      set_fact:
+        backup_to_restore: "{{ s3_backup_file if s3_backup_file != '' else (s3_list.stdout_lines | last | regex_replace('^.* (.*)$', '\\1')) }}"
+      when: s3_list.stdout_lines | length > 0
+
+    - name: Fail if no backups found
+      fail:
+        msg: "No backups found in s3://{{ s3_bucket }}/{{ s3_prefix }}/"
+      when: s3_list.stdout_lines | length == 0
+
+    - name: Show which backup will be restored
+      debug:
+        msg: "Restoring backup: {{ s3_prefix }}/{{ backup_to_restore }}"
+
+    - name: Download backup from S3
+      command: >
+        aws s3 cp
+        s3://{{ s3_bucket }}/{{ s3_prefix }}/{{ backup_to_restore }}
+        {{ local_backup_path }}
+        --endpoint-url {{ aws_credentials.aws_endpoint }}
+      register: s3_download
+
+    - name: Check if backup is encrypted
+      set_fact:
+        is_encrypted: "{{ backup_to_restore.endswith('.enc') }}"
+
+    - name: Decrypt backup if encrypted
+      shell: |
+        openssl enc -aes-256-cbc -d -in {{ local_backup_path }} -out {{ local_backup_path }}.dec -k {{ encryption_password }}
+        mv {{ local_backup_path }}.dec {{ local_backup_path }}
+      when: is_encrypted and encryption_password != ""
+      no_log: true
+
+    - name: Fail if encrypted but no password provided
+      fail:
+        msg: "Backup is encrypted but no encryption_password provided"
+      when: is_encrypted and encryption_password == ""
+
+    - name: Verify PostgreSQL pod is running
+      command: kubectl get pod {{ postgres_pod }} -n {{ postgres_namespace }} -o jsonpath='{.status.phase}'
+      register: pod_status
+      failed_when: pod_status.stdout != "Running"
+      changed_when: false
+
+    - name: Copy backup file to PostgreSQL pod
+      command: kubectl cp {{ local_backup_path }} {{ postgres_namespace }}/{{ postgres_pod }}:{{ pod_backup_path }}
+      when: s3_download is succeeded
+
+    - name: Display restore warning
+      debug:
+        msg: |
+          WARNING: About to restore PostgreSQL backup!
+          This will restore data from: {{ backup_to_restore }}
+          Make sure you have a current backup before proceeding.
+
+    - name: Pause for confirmation
+      pause:
+        prompt: "Press Enter to continue with restore, or Ctrl+C to abort"
+
+    - name: Restore from backup (pg_dumpall format - gzipped)
+      command: >
+        kubectl exec -n {{ postgres_namespace }} {{ postgres_pod }} -c {{ postgres_container }} --
+        bash -c "gunzip < {{ pod_backup_path }} | psql -U postgres"
+      register: restore_output
+      ignore_errors: true
+
+    - name: Display restore output
+      debug:
+        var: restore_output.stdout_lines
+      when: restore_output.stdout is defined and restore_output.stdout != ""
+
+    - name: Display restore errors (if any)
+      debug:
+        var: restore_output.stderr_lines
+      when: restore_output.stderr is defined and restore_output.stderr != ""
+
+    - name: Check if restore succeeded
+      debug:
+        msg: "Restore completed with return code: {{ restore_output.rc }}"
+
+    - name: Remove backup file from pod
+      command: >
+        kubectl exec -n {{ postgres_namespace }} {{ postgres_pod }} -c {{ postgres_container }} --
+        rm -f {{ pod_backup_path }}
+      ignore_errors: true
+
+    - name: Remove local backup file
+      file:
+        path: "{{ local_backup_path }}"
+        state: absent
+
+    - name: Verify PostgreSQL is responding
+      command: >
+        kubectl exec -n {{ postgres_namespace }} {{ postgres_pod }} -c {{ postgres_container }} --
+        pg_isready -U postgres
+      register: pg_status
+      until: pg_status.rc == 0
+      retries: 10
+      delay: 3
+      changed_when: false
+
+    - name: List databases after restore
+      command: >
+        kubectl exec -n {{ postgres_namespace }} {{ postgres_pod }} -c {{ postgres_container }} --
+        psql -U postgres -c '\l'
+      register: db_list
+      changed_when: false
+
+    - name: Show databases
+      debug:
+        var: db_list.stdout_lines
+
+    - name: Clean up AWS credentials
+      file:
+        path: /root/.aws/credentials
+        state: absent
+      no_log: true
+
+    - name: Restore complete
+      debug:
+        msg: |
+          PostgreSQL restore completed!
+          Restored from: {{ s3_prefix }}/{{ backup_to_restore }}
+          Pod: {{ postgres_namespace }}/{{ postgres_pod }}
