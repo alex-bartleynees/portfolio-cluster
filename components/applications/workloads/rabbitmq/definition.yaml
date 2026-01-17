@@ -19,3 +19,21 @@ spec:
       memory: 1Gi
   service:
     type: ClusterIP
+  rabbitmq:
+    additionalConfig: |
+      load_definitions = /etc/rabbitmq/definitions.json
+  override:
+    statefulSet:
+      spec:
+        template:
+          spec:
+            volumes:
+              - name: definitions
+                configMap:
+                  name: rabbitmq-definitions
+            containers:
+              - name: rabbitmq
+                volumeMounts:
+                  - name: definitions
+                    mountPath: /etc/rabbitmq/definitions.json
+                    subPath: definitions.json

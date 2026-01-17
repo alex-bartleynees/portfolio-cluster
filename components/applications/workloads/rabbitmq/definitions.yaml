@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-definitions
+  namespace: rabbitmq-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+data:
+  definitions.json: |
+    {
+      "vhosts": [
+        {"name": "/"},
+        {"name": "dopamine-kick"}
+      ],
+      "users": [],
+      "permissions": []
+    }
