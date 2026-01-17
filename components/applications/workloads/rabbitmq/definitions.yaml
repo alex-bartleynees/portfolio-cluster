@@ -10,7 +10,7 @@ data:
     {
       "vhosts": [
         {"name": "/"},
-        {"name": "dopamine-kick"}
+        {"name": "/dopamine-kick"}
       ],
       "users": [],
       "permissions": []
