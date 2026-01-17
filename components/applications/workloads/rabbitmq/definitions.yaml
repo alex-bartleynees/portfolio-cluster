@@ -13,5 +13,13 @@ data:
         {"name": "/dopamine-kick"}
       ],
       "users": [],
-      "permissions": []
+      "permissions": [
+        {
+          "user": "default_user__ngVgASt5uvFjynskz4",
+          "vhost": "/dopamine-kick",
+          "configure": ".*",
+          "write": ".*",
+          "read": ".*"
+        }
+      ]
     }
