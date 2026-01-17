@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dopamine-kick-app
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/alex-bartleynees/dopamine-kick-api.git
+      path: deployment/helm-charts/dopamine-kick-api
+      targetRevision: HEAD
+      helm:
+        valueFiles:
+          - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dopamine-kick
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

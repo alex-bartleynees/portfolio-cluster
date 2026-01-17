@@ -7,6 +7,7 @@ resources:
 
   - dopamine-kick-bff.yaml
   - dopamine-kick-app.yaml
+  - dopamine-kick-api.yaml
 
   # Database and cache
   - database.yaml
