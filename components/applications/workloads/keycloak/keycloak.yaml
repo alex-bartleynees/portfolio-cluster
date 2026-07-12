@@ -116,7 +116,9 @@ spec:
               echo "Database setup complete."
       containers:
         - name: keycloak
-          image: quay.io/keycloak/keycloak:26.4.7
+          # Custom image = stock Keycloak 26.4.7 + Keycloakify login themes baked in.
+          # Built/pushed by the keycloak-themes repo CD pipeline.
+          image: creativefree/keycloak:26.4.7-9b872bf
           args: ["start"]
           env:
             - name: KC_BOOTSTRAP_ADMIN_USERNAME
