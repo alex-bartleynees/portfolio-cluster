@@ -17,6 +17,22 @@ spec:
         crds:
           enabled: false  
         grafana:
+          additionalDataSources:
+            - name: Loki
+              type: loki
+              access: proxy
+              url: http://loki.monitoring.svc.cluster.local:3100
+              jsonData:
+                derivedFields:
+                  - datasourceUid: jaeger
+                    matcherRegex: "trace_id=(\\w+)"
+                    name: TraceID
+                    url: "$${__value.raw}"
+            - name: Jaeger
+              type: jaeger
+              uid: jaeger
+              access: proxy
+              url: http://jaeger-query.monitoring.svc.cluster.local:16686
           admin:
             existingSecret: grafana-admin-credentials
             userKey: ADMIN_USER
