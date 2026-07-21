@@ -9,6 +9,8 @@ resources:
   - dopamine-kick-app.yaml
   - dopamine-kick-api.yaml
 
+  - payments-gateway-api.yaml
+
   # Database and cache
   - database.yaml
   - backup-app.yaml
