@@ -9,6 +9,10 @@ resources:
   - dopamine-kick-app.yaml
   - dopamine-kick-api.yaml
 
+  - coffee-journal-bff.yaml
+  - coffee-journal-app.yaml
+  - coffee-journal-api.yaml
+
   - payments-gateway-api.yaml
 
   # Database and cache
