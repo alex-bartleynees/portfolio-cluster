@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: skillserver
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: media-skillserver-ingress
+  namespace: skillserver
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - skills.alexbartleynees.com
+      secretName: skillserver-tls
+  rules:
+    - host: skills.alexbartleynees.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: media-skillserver
+                port:
+                  number: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-skillserver
+  namespace: skillserver
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: media-skillserver
+  namespace: skillserver
+subsets:
+  - addresses:
+      - ip: "100.89.61.64"
+    ports:
+      - name: http
+        port: 80
+        protocol: TCP
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: media-skillserver
+  namespace: skillserver
+  labels:
+    kubernetes.io/service-name: media-skillserver
+addressType: IPv4
+ports:
+  - name: http
+    port: 80
+    protocol: TCP
+endpoints:
+  - addresses:
+      - "100.89.61.64"
+    conditions: {}

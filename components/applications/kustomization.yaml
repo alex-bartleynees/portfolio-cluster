@@ -30,6 +30,9 @@ resources:
   # Productivity
   - obsidian-livesync.yaml
 
+  # Skills
+  - skillserver-app.yaml
+
   # Redis
   - redis.yaml
   - workloads/redis

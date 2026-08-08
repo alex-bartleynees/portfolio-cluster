@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: skillserver
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/alex-bartleynees/portfolio-cluster.git
+    targetRevision: HEAD
+    path: components/applications/external-services/skillserver
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: skillserver
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
