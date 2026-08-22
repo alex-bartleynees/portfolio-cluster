@@ -27,10 +27,12 @@ spec:
             mayastor:
               enabled: false
 
-        # Disable observability components (Loki)
+        # Disable observability components (Loki, Alloy)
         observability:
           enabled: false
         loki:
+          enabled: false
+        alloy:
           enabled: false
 
         localpv-provisioner:
