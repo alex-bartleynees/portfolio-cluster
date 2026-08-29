@@ -35,7 +35,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         "k8s_nodes" => ["k8s"]
       }
       ansible.extra_vars = {
-        kubernetes_version: "latest",
         pod_network_cidr: "10.244.0.0/16"
       }
     end

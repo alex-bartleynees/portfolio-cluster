@@ -3,7 +3,7 @@
   hosts: k8s_nodes
   become: true
   vars:
-    target_k8s_version: "1.35"  # Major.Minor version (e.g., "1.35", "1.36")
+    target_k8s_version: "1.36"  # Major.Minor version (e.g., "1.35", "1.36")
     backup_dir: "/var/backups/kubernetes"
     user: "{{ ansible_user }}"
 
@@ -75,7 +75,7 @@
   hosts: k8s_master
   become: true
   vars:
-    target_k8s_version: "1.35"
+    target_k8s_version: "1.36"
     backup_dir: "/var/backups/kubernetes"
 
   tasks:

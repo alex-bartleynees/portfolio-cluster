@@ -1,6 +1,5 @@
 ---
 docker_username: creativefree
-kubernetes_version: "latest"
 pod_network_cidr: "10.244.0.0/16"
 app_namespace: product-feedback
 database_namespace: database
