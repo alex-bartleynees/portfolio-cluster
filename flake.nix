@@ -1,5 +1,5 @@
 {
-  description = "Vagrant development environment with VirtualBox 7.2 support";
+  description = "Vagrant development environment with libvirt/QEMU support";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -9,58 +9,34 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
-          inherit system;
-          config = {
-            allowUnfree = true;
-          };
-          overlays = [
-            # Patch Vagrant to support VirtualBox 7.2
-            (final: prev: {
-              vagrant = prev.vagrant.overrideAttrs (old: {
-                postPatch = (old.postPatch or "") + ''
-                  # Patch meta.rb to support VirtualBox 7.2
-                  for file in embedded/gems/gems/vagrant-*/plugins/providers/virtualbox/driver/meta.rb; do
-                    if [ -f "$file" ]; then
-                      substituteInPlace "$file" \
-                        --replace '"7.0", "7.1"' '"7.0", "7.1", "7.2"' \
-                        --replace '7\.0|7\.1' '7.0|7.1|7.2'
-                    fi
-                  done
-                '';
-              });
-            })
-          ];
-        };
+        pkgs = import nixpkgs { inherit system; };
       in
       {
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
+            # vagrant from nixpkgs bundles the vagrant-libvirt plugin on Linux,
+            # so no `vagrant plugin install` is needed.
             vagrant
-            virtualbox
+            # libvirt client tooling (virsh); the daemon is provided by the
+            # NixOS host module (virtualisation.libvirtd.enable).
+            libvirt
+            qemu
           ];
 
           shellHook = ''
-            # Use VBoxManage wrapper to work around NixOS setuid wrapper issues
-            WRAPPER_DIR="$(pwd)"
-            export PATH="$WRAPPER_DIR:$PATH"
-            export VBOX_USER_HOME="$HOME/.config/VirtualBox"
-
-            # Ensure wrapper script exists and is executable
-            if [ -f "$WRAPPER_DIR/vboxmanage-wrapper.sh" ]; then
-              chmod +x "$WRAPPER_DIR/vboxmanage-wrapper.sh"
-              ln -sf vboxmanage-wrapper.sh "$WRAPPER_DIR/VBoxManage" 2>/dev/null || true
-            fi
+            # Default to the libvirt provider so `vagrant up` needs no flag.
+            export VAGRANT_DEFAULT_PROVIDER=libvirt
+            # Talk to the system libvirt daemon, not a per-user session one.
+            export LIBVIRT_DEFAULT_URI="qemu:///system"
 
             echo "Vagrant development environment activated!"
             echo "Vagrant version: $(vagrant --version)"
-            echo "VirtualBox version: $(/run/current-system/sw/bin/VBoxManage --version)"
+            echo "libvirt version: $(virsh --version 2>/dev/null || echo 'virsh unavailable')"
             echo ""
-            echo "VirtualBox 7.2 support patched into Vagrant"
-            echo "PATH configured to use VBoxManage wrapper: $WRAPPER_DIR"
+            echo "Provider: libvirt ($LIBVIRT_DEFAULT_URI)"
             echo ""
             echo "Start your VM with:"
-            echo "  vagrant up --provider=virtualbox"
+            echo "  vagrant up"
           '';
         };
 

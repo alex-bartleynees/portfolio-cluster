@@ -4,8 +4,8 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "generic/rocky9"
-  config.vm.box_version = "4.3.12"
+  # Official Rocky box; the generic/* and bento/* Rocky 10 boxes have no libvirt build.
+  config.vm.box = "rockylinux/10"
 
   config.vm.define "k8s" do |k8s|
     k8s.vm.hostname = "k8s"
@@ -14,17 +14,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     k8s.vm.network "forwarded_port", guest: 80, host: 8080
     k8s.vm.network "forwarded_port", guest: 443, host: 8443
 
-    k8s.vm.disk :disk, size: "100GB", primary: true
-    
-    k8s.vm.provider "virtualbox" do |vb|
-      vb.memory = 8192
-      vb.cpus = 4
-      # Use GUI mode to work around NixOS VBoxManage setuid wrapper issue
-      # This actually uses VBoxHeadless in the background
-      vb.gui = false
-      # Enable VirtualBox DNS proxy to handle host's Tailscale DNS
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    # Provisioning runs from the host over SSH, so the /vagrant share is unused.
+    # Disabling it avoids the NFS/virtiofs setup vagrant-libvirt would otherwise need.
+    k8s.vm.synced_folder ".", "/vagrant", disabled: true
+
+    k8s.vm.provider "libvirt" do |libvirt|
+      libvirt.memory = 8192
+      libvirt.cpus = 4
+      # Grow the primary disk from the box default up to 100 GiB.
+      libvirt.machine_virtual_size = 100
+      # Guest DNS is handled by the libvirt NAT network's dnsmasq, which forwards
+      # to the host's resolvers (systemd-resolved / Tailscale).
     end
 
     k8s.vm.provision "ansible" do |ansible|
