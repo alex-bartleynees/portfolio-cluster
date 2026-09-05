@@ -76,14 +76,21 @@ spec:
             limits:
               memory: 512Mi
               cpu: 500m
+          # disableDirListing 403s the default GET / health check, so use a
+          # plain TCP connect instead — the chart already supports this same
+          # switch for JWT-enabled filers, same fix applies here.
           livenessProbe:
             enabled: true
             initialDelaySeconds: 20
             periodSeconds: 30
+            tcpSocket:
+              port: 8888
           readinessProbe:
             enabled: true
             initialDelaySeconds: 10
             periodSeconds: 15
+            tcpSocket:
+              port: 8888
 
         s3:
           enabled: true
