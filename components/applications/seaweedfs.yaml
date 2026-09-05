@@ -15,6 +15,18 @@ spec:
       values: |
         global:
           createClusterRole: true
+          seaweedfs:
+            # Gates writes only, not reads. WEED_JWT_FILER_SIGNING_KEY (not
+            # WEED_JWT_SIGNING_KEY, which is master<->volume) overrides the
+            # chart-generated security.toml key at runtime.
+            securityConfig:
+              jwtSigning:
+                filerWrite: true
+            extraEnvironmentVars:
+              WEED_JWT_FILER_SIGNING_KEY:
+                secretKeyRef:
+                  name: seaweedfs-signing-key
+                  key: signingKey
 
         master:
           enabled: true
