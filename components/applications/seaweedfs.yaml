@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://seaweedfs.github.io/seaweedfs/helm
-    targetRevision: 4.0.0
+    targetRevision: 4.26.0
     chart: seaweedfs
     helm:
       values: |
@@ -21,10 +21,6 @@ spec:
           replicas: 1
           port: 9333
           grpcPort: 19333
-          persistence:
-            enabled: true
-            size: 1Gi
-            storageClass: ""
           resources:
             requests:
               memory: 128Mi
@@ -46,10 +42,6 @@ spec:
           replicas: 1
           port: 8080
           grpcPort: 18080
-          persistence:
-            enabled: true
-            size: 10Gi
-            storageClass: ""
           resources:
             requests:
               memory: 256Mi
@@ -71,18 +63,12 @@ spec:
           replicas: 1
           port: 8888
           grpcPort: 18888
-          # extraArgs isn't wired up in chart 4.0.0's filer template
           disableDirListing: true
           s3:
             enabled: true
             port: 8333
-            allowEmptyFolder: false
             enableAuth: true
             existingConfigSecret: seaweedfs-s3-config
-          persistence:
-            enabled: true
-            size: 5Gi
-            storageClass: ""
           resources:
             requests:
               memory: 256Mi
