@@ -71,6 +71,8 @@ spec:
           replicas: 1
           port: 8888
           grpcPort: 18888
+          # extraArgs isn't wired up in chart 4.0.0's filer template
+          disableDirListing: true
           s3:
             enabled: true
             port: 8333
