@@ -118,7 +118,7 @@ spec:
         - name: keycloak
           # Custom image = stock Keycloak 26.4.7 + Keycloakify login themes baked in.
           # Built/pushed by the keycloak-themes repo CD pipeline.
-          image: creativefree/keycloak:26.4.7-e5aa76b
+          image: creativefree/keycloak:26.4.7-c1db603
           args: ["start"]
           env:
             - name: KC_BOOTSTRAP_ADMIN_USERNAME
