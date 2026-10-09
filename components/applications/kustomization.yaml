@@ -13,6 +13,9 @@ resources:
   - coffee-journal-app.yaml
   - coffee-journal-api.yaml
 
+  - mailmerge-bff.yaml
+  - mailmerge-api.yaml
+
   - payments-gateway-api.yaml
 
   # Database and cache
